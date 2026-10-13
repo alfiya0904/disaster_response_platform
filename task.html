@@ -1,0 +1,3503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Volunteer Dashboard</title>
+<script src="api-config.js"></script>
+
+<!-- Leaflet map -->
+<link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#eef2f0;
+    display:flex;
+    justify-content:center;
+}
+
+.app{
+    width:100%;
+    max-width:430px;
+    min-height:100vh;
+    background:#f8fafc;
+    padding-bottom:75px;
+}
+
+/* HEADER */
+.header{
+    height:64px;
+    background:white;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 17px;
+    border-bottom:1px solid #e5e7eb;
+    position:sticky;
+    top:0;
+    z-index:20;
+}
+
+.header h2{
+    font-size:18px;
+    color:#1f2937;
+}
+
+.header button{
+    border:none;
+    background:none;
+    font-size:22px;
+    cursor:pointer;
+}
+
+/* PAGES */
+.page{
+    display:none;
+    padding:17px;
+}
+
+.page.active{
+    display:block;
+}
+
+.title{
+    font-size:22px;
+    color:#1f2937;
+    margin-bottom:6px;
+}
+
+.subtitle{
+    color:#6b7280;
+    font-size:12px;
+    margin-bottom:18px;
+}
+
+/* HOME */
+.welcome-card{
+    background:#078653;
+    color:white;
+    border-radius:16px;
+    padding:20px;
+    margin-bottom:17px;
+}
+
+.welcome-card h2{
+    font-size:20px;
+    margin-bottom:7px;
+}
+
+.welcome-card p{
+    font-size:12px;
+    opacity:.9;
+}
+
+.home-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+}
+
+.home-box{
+    background:white;
+    border:1px solid #e5e7eb;
+    border-radius:13px;
+    padding:18px 12px;
+    text-align:center;
+    cursor:pointer;
+}
+
+.home-box .big{
+    font-size:25px;
+    margin-bottom:8px;
+}
+
+.home-box h3{
+    font-size:13px;
+    color:#333;
+}
+
+.home-box p{
+    font-size:11px;
+    color:#777;
+    margin-top:4px;
+}
+
+/* VOLUNTEER */
+.volunteer-card{
+    background:white;
+    border:1px solid #e5e7eb;
+    border-radius:14px;
+    padding:14px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:16px;
+}
+
+.avatar{
+    width:52px;
+    height:52px;
+    border-radius:50%;
+    background:#e7f5ed;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:25px;
+}
+
+.volunteer-info{
+    flex:1;
+}
+
+.volunteer-info h3{
+    font-size:15px;
+    color:#222;
+}
+
+.volunteer-info p{
+    font-size:11px;
+    color:#777;
+    margin-top:5px;
+}
+
+/* TABS */
+.tabs{
+    display:flex;
+    gap:8px;
+    margin-bottom:15px;
+}
+
+.tab{
+    flex:1;
+    padding:10px;
+    background:white;
+    border:1px solid #dce2df;
+    border-radius:8px;
+    cursor:pointer;
+    color:#555;
+    font-size:12px;
+}
+
+.tab.active{
+    background:#078653;
+    color:white;
+    border-color:#078653;
+}
+
+/* TASK */
+.task-card{
+    background:white;
+    border:1px solid #e5e7eb;
+    border-radius:14px;
+    padding:14px;
+    margin-bottom:12px;
+}
+
+.task-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:8px;
+}
+
+.task-left{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    min-width:0;
+}
+
+.task-icon{
+    width:45px;
+    height:45px;
+    border-radius:11px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+    background:#eaf5ef;
+    flex-shrink:0;
+}
+
+.task-name{
+    min-width:0;
+}
+
+.task-name h3{
+    font-size:14px;
+    color:#222;
+    word-break:break-word;
+}
+
+.task-name p{
+    font-size:10px;
+    color:#777;
+    margin-top:4px;
+}
+
+.priority{
+    font-size:9px;
+    font-weight:bold;
+    padding:5px 8px;
+    border-radius:15px;
+    flex-shrink:0;
+}
+
+.high{
+    background:#ffe5e5;
+    color:#d00000;
+}
+
+.medium{
+    background:#fff0d5;
+    color:#b66a00;
+}
+
+.low{
+    background:#e4f5ea;
+    color:#087b42;
+}
+
+.task-info{
+    margin-top:13px;
+    border-top:1px solid #eee;
+    padding-top:11px;
+}
+
+.info{
+    font-size:11px;
+    color:#555;
+    margin-bottom:7px;
+}
+
+.description{
+    margin-top:11px;
+    padding:10px;
+    border-radius:8px;
+    background:#f7faf8;
+    font-size:11px;
+    line-height:1.5;
+    color:#666;
+}
+
+.task-buttons{
+    display:flex;
+    gap:8px;
+    margin-top:12px;
+}
+
+.details,
+.accept{
+    flex:1;
+    padding:10px;
+    border-radius:7px;
+    cursor:pointer;
+    font-size:11px;
+    font-weight:bold;
+}
+
+.details{
+    border:1px solid #078653;
+    background:white;
+    color:#078653;
+}
+
+.accept{
+    border:none;
+    background:#078653;
+    color:white;
+}
+
+.accept:disabled,
+.status-btn:disabled{
+    opacity:.6;
+    cursor:not-allowed;
+}
+
+.status{
+    margin-top:12px;
+    padding:9px;
+    border-radius:8px;
+    background:#eef7f1;
+    color:#087b42;
+    text-align:center;
+    font-size:11px;
+    font-weight:bold;
+}
+
+.status-btn{
+    width:100%;
+    margin-top:8px;
+    padding:10px;
+    border:none;
+    border-radius:7px;
+    background:#078653;
+    color:white;
+    cursor:pointer;
+    font-size:11px;
+}
+
+/* MAP */
+.map-wrapper{
+    background:white;
+    border-radius:16px;
+    overflow:hidden;
+    border:1px solid #d3ddd7;
+}
+
+#liveMap{
+    width:100%;
+    height:390px;
+}
+
+.map-controls{
+    display:flex;
+    gap:8px;
+    padding:10px;
+}
+
+.map-control-btn{
+    flex:1;
+    border:none;
+    background:#078653;
+    color:white;
+    border-radius:8px;
+    padding:10px;
+    font-size:11px;
+    cursor:pointer;
+}
+
+.map-note{
+    background:white;
+    border-radius:12px;
+    padding:13px;
+    margin-top:12px;
+    font-size:12px;
+    color:#555;
+    line-height:1.5;
+}
+
+/* CHAT */
+.chat-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.chat-item{
+    background:white;
+    border:1px solid #e5e7eb;
+    border-radius:13px;
+    padding:13px;
+    display:flex;
+    align-items:center;
+    gap:11px;
+    cursor:pointer;
+}
+
+.chat-avatar{
+    width:45px;
+    height:45px;
+    border-radius:50%;
+    background:#e8f5ee;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:20px;
+    flex-shrink:0;
+}
+
+.chat-info{
+    flex:1;
+}
+
+.chat-info h3{
+    font-size:13px;
+}
+
+.chat-info p{
+    color:#777;
+    font-size:11px;
+    margin-top:5px;
+}
+
+.chat-time{
+    font-size:9px;
+    color:#999;
+}
+
+/* CHAT WINDOW */
+.chat-window{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:white;
+    z-index:150;
+    width:100%;
+    max-width:430px;
+    margin:auto;
+}
+
+.chat-header{
+    height:60px;
+    background:#078653;
+    color:white;
+    display:flex;
+    align-items:center;
+    padding:0 15px;
+    gap:12px;
+}
+
+.chat-header button{
+    border:none;
+    background:none;
+    color:white;
+    font-size:24px;
+    cursor:pointer;
+}
+
+.chat-header h3{
+    font-size:16px;
+}
+
+.messages{
+    height:calc(100vh - 120px);
+    padding:15px;
+    overflow-y:auto;
+    background:#f4f7f5;
+}
+
+.message{
+    padding:10px;
+    border-radius:10px;
+    width:max-content;
+    max-width:78%;
+    font-size:12px;
+    margin:8px 0;
+    line-height:1.45;
+    word-break:break-word;
+}
+
+.message.team{
+    background:white;
+    color:#555;
+}
+
+.message.user{
+    background:#078653;
+    color:white;
+    margin-left:auto;
+}
+
+.message.ai{
+    background:#e9f5ee;
+    color:#333;
+}
+
+.chat-input{
+    position:absolute;
+    bottom:0;
+    left:0;
+    right:0;
+    height:60px;
+    background:white;
+    border-top:1px solid #ddd;
+    display:flex;
+    gap:8px;
+    padding:8px;
+}
+
+.chat-input input{
+    flex:1;
+    border:1px solid #ddd;
+    border-radius:20px;
+    padding:10px 14px;
+    outline:none;
+    font-size:13px;
+}
+
+.chat-input button{
+    width:45px;
+    border:none;
+    border-radius:50%;
+    background:#078653;
+    color:white;
+    cursor:pointer;
+}
+
+.typing{
+    font-size:10px;
+    color:#777;
+    margin:8px 0;
+    display:none;
+}
+
+/* PROFILE */
+.profile-card{
+    background:white;
+    border:1px solid #e5e7eb;
+    border-radius:14px;
+    padding:16px;
+}
+
+.profile-avatar{
+    width:75px;
+    height:75px;
+    border-radius:50%;
+    background:#e7f5ed;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:35px;
+    margin:0 auto 12px;
+}
+
+.profile-name{
+    text-align:center;
+    font-size:18px;
+    font-weight:bold;
+}
+
+.profile-role{
+    text-align:center;
+    color:#078653;
+    font-size:11px;
+    margin-top:5px;
+    margin-bottom:17px;
+}
+
+.profile-row{
+    padding:12px 2px;
+    border-bottom:1px solid #eee;
+}
+
+.profile-row:last-child{
+    border-bottom:none;
+}
+
+.profile-row span:first-child{
+    display:block;
+    font-size:10px;
+    color:#777;
+    margin-bottom:5px;
+}
+
+.profile-row span:last-child{
+    font-size:13px;
+    color:#222;
+}
+
+/* MODAL */
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.45);
+    display:none;
+    align-items:flex-end;
+    justify-content:center;
+    z-index:100;
+}
+
+.modal.show{
+    display:flex;
+}
+
+.modal-box{
+    width:100%;
+    max-width:430px;
+    max-height:85vh;
+    overflow-y:auto;
+    background:white;
+    border-radius:20px 20px 0 0;
+    padding:20px;
+}
+
+.modal-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.modal-head h2{
+    font-size:18px;
+}
+
+.close{
+    border:none;
+    width:32px;
+    height:32px;
+    border-radius:50%;
+    cursor:pointer;
+}
+
+.detail{
+    padding:12px 0;
+    border-bottom:1px solid #eee;
+}
+
+.detail strong{
+    display:block;
+    color:#078653;
+    font-size:11px;
+    margin-bottom:5px;
+}
+
+.detail span{
+    font-size:12px;
+    color:#555;
+}
+
+.modal-btn{
+    width:100%;
+    margin-top:15px;
+    padding:12px;
+    border:none;
+    border-radius:8px;
+    background:#078653;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+/* NAV */
+.bottom-nav{
+    position:fixed;
+    bottom:0;
+    left:50%;
+    transform:translateX(-50%);
+    width:100%;
+    max-width:430px;
+    height:72px;
+    background:white;
+    border-top:1px solid #ddd;
+    display:flex;
+    z-index:50;
+}
+
+.nav-btn{
+    flex:1;
+    border:none;
+    background:white;
+    color:#777;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    gap:4px;
+    font-size:10px;
+}
+
+.nav-icon{
+    font-size:20px;
+}
+
+.nav-btn.active{
+    color:#078653;
+    font-weight:bold;
+}
+
+/* TOAST */
+.toast{
+    position:fixed;
+    bottom:85px;
+    left:50%;
+    transform:translateX(-50%);
+    background:#222;
+    color:white;
+    padding:10px 15px;
+    border-radius:7px;
+    font-size:11px;
+    display:none;
+    z-index:200;
+    max-width:90%;
+    text-align:center;
+}
+
+.toast.show{
+    display:block;
+}
+
+/* LOADING */
+.loading{
+    text-align:center;
+    padding:25px;
+    color:#777;
+    font-size:12px;
+}
+
+.error-box{
+    background:#fff0f0;
+    color:#b00020;
+    border-radius:10px;
+    padding:13px;
+    font-size:11px;
+    text-align:center;
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<!-- HEADER -->
+<header class="header">
+    <button onclick="goHome()">☰</button>
+
+    <h2 id="headerTitle">Home</h2>
+
+    <button onclick="showToast('Notifications are connected to your dashboard')">
+        🔔
+    </button>
+</header>
+
+
+<!-- HOME -->
+<section class="page active" id="homePage">
+
+    <div class="welcome-card">
+        <h2 id="homeName">Welcome Volunteer 👋</h2>
+        <p>Help your community during emergencies.</p>
+    </div>
+
+    <h2 class="title">Quick Overview</h2>
+
+    <p class="subtitle">Your volunteer activities</p>
+
+    <div class="home-grid">
+
+        <div class="home-box" onclick="goTasks()">
+            <div class="big">📋</div>
+            <h3>Available Tasks</h3>
+            <p id="availableCount">0 tasks</p>
+        </div>
+
+        <div class="home-box" onclick="goMyTasks()">
+            <div class="big">🤝</div>
+            <h3>My Tasks</h3>
+            <p id="myTaskCount">0 accepted</p>
+        </div>
+
+        <div class="home-box" onclick="goMap()">
+            <div class="big">🗺️</div>
+            <h3>Nearby Tasks</h3>
+            <p>View live map</p>
+        </div>
+
+        <div class="home-box" onclick="goChat()">
+            <div class="big">💬</div>
+            <h3>Chat</h3>
+            <p>AI & team messages</p>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- TASKS -->
+<section class="page" id="tasksPage">
+
+    <h2 class="title">Volunteer Tasks</h2>
+
+    <p class="subtitle">
+        Find, accept and complete disaster-response tasks.
+    </p>
+
+    <div class="volunteer-card">
+
+        <div class="avatar">👤</div>
+
+        <div class="volunteer-info">
+
+            <h3 id="volunteerName">Volunteer</h3>
+
+            <p id="volunteerLocation">📍 Location</p>
+
+            <p id="volunteerSkills">🛠 Skills</p>
+
+        </div>
+
+    </div>
+
+    <div class="tabs">
+
+        <button class="tab active"
+                id="availableTab"
+                onclick="showAvailable()">
+            Available
+        </button>
+
+        <button class="tab"
+                id="myTab"
+                onclick="showMyTasks()">
+            My Tasks
+        </button>
+
+        <button class="tab"
+                id="completedTab"
+                onclick="showCompletedTasks()">
+            Completed
+        </button>
+
+    </div>
+
+    <div id="taskList"></div>
+
+</section>
+
+
+<!-- MAP -->
+<section class="page" id="mapPage">
+
+    <h2 class="title">Nearby Tasks</h2>
+
+    <p class="subtitle">
+        Live location and disaster-response tasks
+    </p>
+
+    <div class="map-wrapper">
+
+        <div id="liveMap"></div>
+
+        <div class="map-controls">
+
+            <button class="map-control-btn"
+                    onclick="locateMe()">
+                📍 My Location
+            </button>
+
+            <button class="map-control-btn"
+                    onclick="loadMapTasks()">
+                🔄 Refresh Tasks
+            </button>
+
+        </div>
+
+    </div>
+
+    <div class="map-note" id="locationStatus">
+        📍 Getting your current location...
+    </div>
+
+</section>
+
+
+<!-- CHAT -->
+<section class="page" id="chatPage">
+
+    <h2 class="title">Team & AI Chat</h2>
+
+    <p class="subtitle">
+        Communicate with your team or ask the emergency assistant.
+    </p>
+
+    <div class="chat-list">
+
+        <div class="chat-item"
+             onclick="openChat('AI Emergency Assistant')">
+
+            <div class="chat-avatar">🤖</div>
+
+            <div class="chat-info">
+
+                <h3>AI Emergency Assistant</h3>
+
+                <p>Ask about tasks, safety, location or status.</p>
+
+            </div>
+
+            <span class="chat-time">AI</span>
+
+        </div>
+
+
+        <div class="chat-item"
+             onclick="openChat('Disaster Coordinator')">
+
+            <div class="chat-avatar">👨‍💼</div>
+
+            <div class="chat-info">
+
+                <h3>Disaster Coordinator</h3>
+
+                <p>Task and coordination support.</p>
+
+            </div>
+
+            <span class="chat-time">Team</span>
+
+        </div>
+
+
+        <div class="chat-item"
+             onclick="openChat('Rescue Team')">
+
+            <div class="chat-avatar">🚑</div>
+
+            <div class="chat-info">
+
+                <h3>Rescue Team</h3>
+
+                <p>Rescue coordination.</p>
+
+            </div>
+
+            <span class="chat-time">Team</span>
+
+        </div>
+
+
+        <div class="chat-item"
+             onclick="openChat('Medical Team')">
+
+            <div class="chat-avatar">🩺</div>
+
+            <div class="chat-info">
+
+                <h3>Medical Team</h3>
+
+                <p>Medical support communication.</p>
+
+            </div>
+
+            <span class="chat-time">Team</span>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- CHAT WINDOW -->
+<div class="chat-window" id="chatWindow">
+
+    <div class="chat-header">
+
+        <button onclick="closeChat()">←</button>
+
+        <h3 id="chatPerson">Chat</h3>
+
+    </div>
+
+    <div class="messages" id="messages"></div>
+
+    <div class="typing" id="typing">
+        Assistant is typing...
+    </div>
+
+    <div class="chat-input">
+
+        <input
+            id="messageInput"
+            type="text"
+            placeholder="Type a message..."
+            autocomplete="off"
+        >
+
+        <button onclick="sendMessage()">➤</button>
+
+    </div>
+
+</div>
+
+
+<!-- PROFILE -->
+<section class="page" id="profilePage">
+
+    <h2 class="title">My Profile</h2>
+
+    <p class="subtitle">
+        Your volunteer information
+    </p>
+
+    <div class="profile-card">
+
+        <div class="profile-avatar">👤</div>
+
+        <div class="profile-name" id="profileName">
+            Volunteer
+        </div>
+
+        <div class="profile-role">
+            Volunteer
+        </div>
+
+        <div class="profile-row">
+            <span>Location</span>
+            <span id="profileLocation">Not provided</span>
+        </div>
+
+        <div class="profile-row">
+            <span>Skills</span>
+            <span id="profileSkills">Not provided</span>
+        </div>
+
+        <div class="profile-row">
+            <span>Availability</span>
+            <span id="profileAvailability">Available</span>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- TASK MODAL -->
+<div class="modal" id="taskModal">
+
+    <div class="modal-box">
+
+        <div class="modal-head">
+
+            <h2 id="modalTitle">Task Details</h2>
+
+            <button class="close"
+                    onclick="closeModal()">
+                ×
+            </button>
+
+        </div>
+
+        <div class="detail">
+            <strong>📍 Location</strong>
+            <span id="modalLocation"></span>
+        </div>
+
+        <div class="detail">
+            <strong>⏰ Time</strong>
+            <span id="modalTime"></span>
+        </div>
+
+        <div class="detail">
+            <strong>🚨 Priority</strong>
+            <span id="modalPriority"></span>
+        </div>
+
+        <div class="detail">
+            <strong>👥 Volunteers Needed</strong>
+            <span id="modalVolunteers"></span>
+        </div>
+
+        <div class="detail">
+            <strong>📝 Description</strong>
+            <span id="modalDescription"></span>
+        </div>
+
+        <div class="detail">
+            <strong>🎒 Resources</strong>
+            <span id="modalResources"></span>
+        </div>
+
+        <button class="modal-btn"
+                id="modalAccept">
+            Accept Task
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+
+    <button class="nav-btn active"
+            id="homeNav"
+            onclick="goHome()">
+
+        <span class="nav-icon">🏠</span>
+        Home
+
+    </button>
+
+    <button class="nav-btn"
+            id="mapNav"
+            onclick="goMap()">
+
+        <span class="nav-icon">🗺️</span>
+        Map
+
+    </button>
+
+    <button class="nav-btn"
+            id="tasksNav"
+            onclick="goTasks()">
+
+        <span class="nav-icon">📋</span>
+        Tasks
+
+    </button>
+
+    <button class="nav-btn"
+            id="chatNav"
+            onclick="goChat()">
+
+        <span class="nav-icon">💬</span>
+        Chat
+
+    </button>
+
+    <button class="nav-btn"
+            id="profileNav"
+            onclick="goProfile()">
+
+        <span class="nav-icon">👤</span>
+        Profile
+
+    </button>
+
+</nav>
+
+<div class="toast" id="toast"></div>
+
+</div>
+
+
+<!-- LEAFLET -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+
+<script>
+/* =========================================================
+   GLOBAL DATA
+========================================================= */
+
+let volunteer = {
+    name:"Volunteer",
+    location:"Chennai",
+    skills:"First Aid",
+    availability:"Available"
+};
+
+let tasks = [];
+let myTasks = [];
+let completedTasks = [];
+
+let map = null;
+let userMarker = null;
+let userCircle = null;
+let userLocation = null;
+
+let chatHistory = {};
+
+let currentChat = "";
+
+
+/* =========================================================
+   SAFE HTML
+========================================================= */
+
+function escapeHTML(value){
+
+    if(value === null || value === undefined){
+        return "";
+    }
+
+    return String(value)
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+}
+
+
+/* =========================================================
+   PROFILE
+========================================================= */
+
+function loadProfile(){
+
+    const saved = localStorage.getItem("volunteerProfile");
+
+    if(saved){
+
+        try{
+
+            const data = JSON.parse(saved);
+
+            volunteer.name =
+                data.name || volunteer.name;
+
+            volunteer.location =
+                data.location || volunteer.location;
+
+            volunteer.skills =
+                data.skills || volunteer.skills;
+
+            volunteer.availability =
+                data.availability || volunteer.availability;
+
+        }catch(error){
+
+            console.error("Profile error:",error);
+
+        }
+
+    }
+
+    document.getElementById("homeName").innerText =
+        "Welcome " + volunteer.name + " 👋";
+
+    document.getElementById("volunteerName").innerText =
+        volunteer.name;
+
+    document.getElementById("volunteerLocation").innerText =
+        "📍 " + volunteer.location;
+
+    document.getElementById("volunteerSkills").innerText =
+        "🛠 " + volunteer.skills;
+
+    document.getElementById("profileName").innerText =
+        volunteer.name;
+
+    document.getElementById("profileLocation").innerText =
+        volunteer.location;
+
+    document.getElementById("profileSkills").innerText =
+        volunteer.skills;
+
+    document.getElementById("profileAvailability").innerText =
+        volunteer.availability;
+}
+
+
+/* =========================================================
+   LOAD MY TASKS
+========================================================= */
+
+async function loadMyTasks(){
+
+    const volunteerId =
+        localStorage.getItem("userId");
+
+    if(!volunteerId){
+        myTasks = [];
+        updateCounts();
+        return;
+    }
+
+    try{
+
+        const response =
+            await fetch(
+                `/api/tasks/volunteer/${encodeURIComponent(volunteerId)}`
+            );
+
+        const data =
+            await response.json();
+
+        if(!response.ok){
+            throw new Error(
+                data.message || "Unable to load volunteer tasks"
+            );
+        }
+
+        const serverTasks =
+            Array.isArray(data)
+                ? data
+                : Array.isArray(data.tasks)
+                    ? data.tasks
+                    : [];
+
+        myTasks = serverTasks
+            .filter(task =>
+                task.status !== "completed"
+            )
+            .map(normalizeTask);
+
+        completedTasks =
+            serverTasks
+                .filter(task =>
+                    task.status === "completed"
+                )
+                .map(normalizeTask);
+
+        updateCounts();
+
+    }
+    catch(error){
+
+        console.error(
+            "Failed to load my tasks:",
+            error
+        );
+
+        /*
+           Do not destroy local tasks if the server
+           is temporarily unavailable.
+        */
+
+        const saved =
+            localStorage.getItem("myVolunteerTasks");
+
+        if(saved){
+
+            try{
+                myTasks = JSON.parse(saved);
+            }catch(e){
+                myTasks = [];
+            }
+
+        }
+
+        updateCounts();
+    }
+}
+
+
+/* =========================================================
+   NORMALIZE TASK
+========================================================= */
+
+function normalizeTask(task){
+
+    const statusMap = {
+        "available":"Available",
+        "accepted":"Accepted",
+        "on-the-way":"On the Way",
+        "arrived":"Arrived",
+        "in-progress":"In Progress",
+        "completed":"Completed"
+    };
+
+    const rawStatus =
+        String(task.status || "accepted")
+            .toLowerCase();
+
+    return {
+
+        id:String(task._id || task.id),
+
+        mongoId:String(task._id || task.id),
+
+        icon:"📋",
+
+        title:task.title || "Untitled Task",
+
+        type:"Disaster Response",
+
+        priority:
+            String(task.priority || "medium")
+                .toLowerCase(),
+
+        location:
+            task.location ||
+            task.address ||
+            "Not specified",
+
+        latitude:
+            task.latitude ??
+            task.lat ??
+            task.locationCoordinates?.latitude ??
+            task.coordinates?.lat ??
+            null,
+
+        longitude:
+            task.longitude ??
+            task.lng ??
+            task.locationCoordinates?.longitude ??
+            task.coordinates?.lng ??
+            null,
+
+        distance:"Nearby",
+
+        time:
+            task.time ||
+            task.scheduledTime ||
+            "Not specified",
+
+        volunteers:
+            task.volunteersRequired ||
+            task.volunteersNeeded ||
+            1,
+
+        description:
+            task.description || "",
+
+        resources:
+            task.resources ||
+            "Emergency equipment",
+
+        status:
+            statusMap[rawStatus] ||
+            task.status ||
+            "Accepted"
+    };
+}
+
+
+/* =========================================================
+   LOCAL SAVE
+========================================================= */
+
+function saveMyTasks(){
+
+    localStorage.setItem(
+        "myVolunteerTasks",
+        JSON.stringify(myTasks)
+    );
+}
+
+function saveCompletedTasks(){
+
+    localStorage.setItem(
+        "completedVolunteerTasks",
+        JSON.stringify(completedTasks)
+    );
+}
+
+
+/* =========================================================
+   LOAD LOCAL COMPLETED
+========================================================= */
+
+function loadCompletedTasks(){
+
+    const saved =
+        localStorage.getItem(
+            "completedVolunteerTasks"
+        );
+
+    if(saved){
+
+        try{
+            completedTasks =
+                JSON.parse(saved);
+        }catch(error){
+            completedTasks = [];
+        }
+
+    }
+}
+
+
+/* =========================================================
+   TASKS FROM SERVER
+========================================================= */
+
+async function loadTasksFromServer(){
+
+    const container =
+        document.getElementById("taskList");
+
+    try{
+
+        const response =
+            await fetch("/api/tasks");
+
+        const data =
+            await response.json();
+
+        if(!response.ok){
+
+            throw new Error(
+                data.message ||
+                "Unable to load tasks"
+            );
+
+        }
+
+        const serverTasks =
+            Array.isArray(data)
+                ? data
+                : Array.isArray(data.tasks)
+                    ? data.tasks
+                    : [];
+
+        /*
+           Available page should not show tasks that
+           are already assigned to a volunteer.
+        */
+
+        tasks =
+            serverTasks
+                .filter(task => {
+
+                    const status =
+                        String(
+                            task.status || "available"
+                        ).toLowerCase();
+
+                    return (
+                        status === "available" ||
+                        !task.status
+                    );
+
+                })
+                .map(normalizeTask);
+
+        updateCounts();
+
+        if(
+            document
+                .getElementById("tasksPage")
+                .classList.contains("active")
+        ){
+            showAvailable();
+        }
+
+        loadMapTasks();
+
+    }
+    catch(error){
+
+        console.error(
+            "Failed to load tasks:",
+            error
+        );
+
+        if(
+            document
+                .getElementById("taskList")
+        ){
+
+            container.innerHTML = `
+                <div class="error-box">
+                    Unable to load tasks from server.
+                    Please refresh and try again.
+                </div>
+            `;
+
+        }
+
+    }
+}
+
+
+/* =========================================================
+   TASK NAVIGATION
+========================================================= */
+
+function goTasks(){
+
+    hidePages();
+
+    document
+        .getElementById("tasksPage")
+        .classList.add("active");
+
+    document
+        .getElementById("headerTitle")
+        .innerText = "Tasks";
+
+    setNav("tasks");
+
+    showAvailable();
+
+    loadTasksFromServer();
+}
+
+
+function goMyTasks(){
+
+    hidePages();
+
+    document
+        .getElementById("tasksPage")
+        .classList.add("active");
+
+    document
+        .getElementById("headerTitle")
+        .innerText = "My Tasks";
+
+    setNav("tasks");
+
+    showMyTasks();
+
+    loadMyTasks();
+}
+
+
+/* =========================================================
+   AVAILABLE TASKS
+========================================================= */
+
+function showAvailable(){
+
+    document
+        .getElementById("availableTab")
+        .classList.add("active");
+
+    document
+        .getElementById("myTab")
+        .classList.remove("active");
+
+    document
+        .getElementById("completedTab")
+        .classList.remove("active");
+
+    renderTasks(tasks);
+}
+
+
+/* =========================================================
+   RENDER AVAILABLE TASKS
+========================================================= */
+
+function renderTasks(list){
+
+    const container =
+        document.getElementById("taskList");
+
+    if(!list.length){
+
+        container.innerHTML = `
+            <div class="task-card"
+                 style="text-align:center">
+
+                <h3>No available tasks</h3>
+
+                <p style="
+                    font-size:11px;
+                    color:#777;
+                    margin-top:7px">
+                    Please check again later.
+                </p>
+
+            </div>
+        `;
+
+        return;
+    }
+
+    container.innerHTML = "";
+
+    list.forEach(task => {
+
+        const priority =
+            ["high","medium","low"]
+                .includes(task.priority)
+                ? task.priority
+                : "medium";
+
+        const card =
+            document.createElement("div");
+
+        card.className = "task-card";
+
+        card.innerHTML = `
+
+            <div class="task-top">
+
+                <div class="task-left">
+
+                    <div class="task-icon">
+                        ${escapeHTML(task.icon)}
+                    </div>
+
+                    <div class="task-name">
+
+                        <h3>
+                            ${escapeHTML(task.title)}
+                        </h3>
+
+                        <p>
+                            ${escapeHTML(task.type)} Task
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <span class="priority ${priority}">
+                    ${escapeHTML(task.priority)}
+                </span>
+
+            </div>
+
+
+            <div class="task-info">
+
+                <div class="info">
+                    📍 ${escapeHTML(task.location)}
+                </div>
+
+                <div class="info">
+                    📏 ${escapeHTML(task.distance)}
+                </div>
+
+                <div class="info">
+                    ⏰ ${escapeHTML(task.time)}
+                </div>
+
+                <div class="info">
+                    👥 ${escapeHTML(task.volunteers)}
+                    volunteers needed
+                </div>
+
+            </div>
+
+
+            <div class="description">
+                ${escapeHTML(task.description)}
+            </div>
+
+
+            <div class="task-buttons">
+
+                <button class="details"
+                        data-id="${escapeHTML(task.id)}">
+                    View Details
+                </button>
+
+                <button class="accept"
+                        data-id="${escapeHTML(task.id)}">
+                    Accept
+                </button>
+
+            </div>
+        `;
+
+        card
+            .querySelector(".details")
+            .addEventListener(
+                "click",
+                () => viewDetails(task.id)
+            );
+
+        card
+            .querySelector(".accept")
+            .addEventListener(
+                "click",
+                () => acceptTask(task.id)
+            );
+
+        container.appendChild(card);
+    });
+}
+
+
+/* =========================================================
+   ACCEPT TASK
+========================================================= */
+
+async function acceptTask(id){
+
+    const task =
+        tasks.find(
+            item => String(item.id) === String(id)
+        );
+
+    if(!task){
+        showToast("Task not found");
+        return;
+    }
+
+    const volunteerId =
+        localStorage.getItem("userId");
+
+    if(!volunteerId){
+
+        showToast(
+            "Volunteer login information not found"
+        );
+
+        return;
+    }
+
+    const buttons =
+        document.querySelectorAll(
+            `.accept[data-id="${CSS.escape(String(id))}"]`
+        );
+
+    buttons.forEach(button => {
+        button.disabled = true;
+        button.innerText = "Accepting...";
+    });
+
+    try{
+
+        const response =
+            await fetch(
+                `/api/tasks/${encodeURIComponent(task.mongoId)}/accept`,
+                {
+                    method:"PUT",
+                    headers:{
+                        "Content-Type":"application/json"
+                    },
+                    body:JSON.stringify({
+                        volunteerId:volunteerId
+                    })
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if(!response.ok){
+
+            throw new Error(
+                data.message ||
+                "Failed to accept task"
+            );
+
+        }
+
+        /*
+           Remove from available list.
+        */
+
+        tasks =
+            tasks.filter(
+                item =>
+                    String(item.id) !== String(id)
+            );
+
+        /*
+           Reload from backend so the volunteer sees
+           the actual database status.
+        */
+
+        await loadMyTasks();
+
+        updateCounts();
+
+        closeModal();
+
+        showToast(
+            "✓ Task accepted successfully!"
+        );
+
+        showMyTasks();
+
+    }
+    catch(error){
+
+        console.error(
+            "Accept task error:",
+            error
+        );
+
+        showToast(
+            error.message ||
+            "Unable to accept task"
+        );
+
+        buttons.forEach(button => {
+            button.disabled = false;
+            button.innerText = "Accept";
+        });
+
+    }
+}
+
+
+/* =========================================================
+   MY TASKS
+========================================================= */
+
+function showMyTasks(){
+
+    document
+        .getElementById("availableTab")
+        .classList.remove("active");
+
+    document
+        .getElementById("myTab")
+        .classList.add("active");
+
+    document
+        .getElementById("completedTab")
+        .classList.remove("active");
+
+    const container =
+        document.getElementById("taskList");
+
+    if(!myTasks.length){
+
+        container.innerHTML = `
+            <div class="task-card"
+                 style="text-align:center">
+
+                <h3>No assigned tasks</h3>
+
+                <p style="
+                    font-size:11px;
+                    color:#777;
+                    margin-top:7px">
+                    Tasks assigned or accepted by you
+                    will appear here.
+                </p>
+
+            </div>
+        `;
+
+        return;
+    }
+
+    container.innerHTML = "";
+
+    myTasks.forEach(task => {
+
+        const priority =
+            ["high","medium","low"]
+                .includes(task.priority)
+                ? task.priority
+                : "medium";
+
+        const card =
+            document.createElement("div");
+
+        card.className = "task-card";
+
+        const canUpdate =
+            task.status !== "Completed";
+
+        card.innerHTML = `
+
+            <div class="task-top">
+
+                <div class="task-left">
+
+                    <div class="task-icon">
+                        📋
+                    </div>
+
+                    <div class="task-name">
+
+                        <h3>
+                            ${escapeHTML(task.title)}
+                        </h3>
+
+                        <p>
+                            ${escapeHTML(task.location)}
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <span class="priority ${priority}">
+                    ${escapeHTML(task.priority)}
+                </span>
+
+            </div>
+
+
+            <div class="task-info">
+
+                <div class="info">
+                    📍 ${escapeHTML(task.location)}
+                </div>
+
+                <div class="info">
+                    ⏰ ${escapeHTML(task.time)}
+                </div>
+
+                <div class="info">
+                    👥 ${escapeHTML(task.volunteers)}
+                    volunteers needed
+                </div>
+
+            </div>
+
+
+            <div class="description">
+                ${escapeHTML(task.description)}
+            </div>
+
+
+            <div class="status">
+                Status: ${escapeHTML(task.status)}
+            </div>
+
+            ${
+                canUpdate
+                ?
+                `<button class="status-btn">
+                    Update Status
+                 </button>`
+                :
+                ""
+            }
+
+        `;
+
+        if(canUpdate){
+
+            card
+                .querySelector(".status-btn")
+                .addEventListener(
+                    "click",
+                    () => updateStatus(task.id)
+                );
+
+        }
+
+        container.appendChild(card);
+
+    });
+}
+
+
+/* =========================================================
+   COMPLETED TASKS
+========================================================= */
+
+function showCompletedTasks(){
+
+    document
+        .getElementById("availableTab")
+        .classList.remove("active");
+
+    document
+        .getElementById("myTab")
+        .classList.remove("active");
+
+    document
+        .getElementById("completedTab")
+        .classList.add("active");
+
+    const container =
+        document.getElementById("taskList");
+
+    if(!completedTasks.length){
+
+        container.innerHTML = `
+            <div class="task-card"
+                 style="text-align:center">
+
+                <h3>No completed tasks</h3>
+
+                <p style="
+                    font-size:11px;
+                    color:#777;
+                    margin-top:7px">
+                    Completed tasks will appear here.
+                </p>
+
+            </div>
+        `;
+
+        return;
+    }
+
+    container.innerHTML = "";
+
+    completedTasks.forEach(task => {
+
+        const card =
+            document.createElement("div");
+
+        card.className = "task-card";
+
+        card.innerHTML = `
+
+            <div class="task-top">
+
+                <div class="task-left">
+
+                    <div class="task-icon">
+                        📋
+                    </div>
+
+                    <div class="task-name">
+
+                        <h3>
+                            ${escapeHTML(task.title)}
+                        </h3>
+
+                        <p>
+                            ${escapeHTML(task.location)}
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <span class="priority low">
+                    Completed
+                </span>
+
+            </div>
+
+            <div class="task-info">
+
+                <div class="info">
+                    📍 ${escapeHTML(task.location)}
+                </div>
+
+                <div class="info">
+                    ⏰ ${escapeHTML(task.time)}
+                </div>
+
+            </div>
+
+            <div class="status">
+                ✓ Task Completed
+            </div>
+
+        `;
+
+        container.appendChild(card);
+
+    });
+}
+
+
+/* =========================================================
+   UPDATE TASK STATUS
+========================================================= */
+
+async function updateStatus(id){
+
+    const task =
+        myTasks.find(
+            item => String(item.id) === String(id)
+        );
+
+    if(!task){
+        showToast("Task not found");
+        return;
+    }
+
+    const statusList = [
+        "Accepted",
+        "On the Way",
+        "Arrived",
+        "In Progress",
+        "Completed"
+    ];
+
+    let index =
+        statusList.indexOf(task.status);
+
+    /*
+       If backend uses an unknown status,
+       continue from Accepted.
+    */
+
+    if(index < 0){
+        index = 0;
+    }
+
+    if(index >= statusList.length - 1){
+        showToast("Task is already completed");
+        return;
+    }
+
+    const newStatus =
+        statusList[index + 1];
+
+    const mongoStatus =
+        newStatus
+            .toLowerCase()
+            .replace(/\s+/g,"-");
+
+    if(!task.mongoId){
+
+        showToast(
+            "Task ID is missing"
+        );
+
+        return;
+    }
+
+    try{
+
+        const response =
+            await fetch(
+                `/api/tasks/${encodeURIComponent(task.mongoId)}/status`,
+                {
+                    method:"PUT",
+                    headers:{
+                        "Content-Type":"application/json"
+                    },
+                    body:JSON.stringify({
+                        status:mongoStatus
+                    })
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if(!response.ok){
+
+            throw new Error(
+                data.message ||
+                "Failed to update task status"
+            );
+
+        }
+
+        /*
+           Use backend response if available.
+        */
+
+        const updated =
+            data.task ||
+            data;
+
+        if(updated && updated.status){
+
+            const backendStatus =
+                String(updated.status)
+                    .toLowerCase();
+
+            const statusMap = {
+                "available":"Available",
+                "accepted":"Accepted",
+                "on-the-way":"On the Way",
+                "arrived":"Arrived",
+                "in-progress":"In Progress",
+                "completed":"Completed"
+            };
+
+            task.status =
+                statusMap[backendStatus] ||
+                newStatus;
+
+        }else{
+
+            task.status = newStatus;
+
+        }
+
+        if(task.status === "Completed"){
+
+            myTasks =
+                myTasks.filter(
+                    item =>
+                        String(item.id) !== String(id)
+                );
+
+            completedTasks =
+                completedTasks.filter(
+                    item =>
+                        String(item.id) !== String(id)
+                );
+
+            completedTasks.unshift(task);
+
+            saveMyTasks();
+            saveCompletedTasks();
+
+            updateCounts();
+
+            showCompletedTasks();
+
+            showToast(
+                "✓ Task completed successfully!"
+            );
+
+        }else{
+
+            saveMyTasks();
+
+            showMyTasks();
+
+            showToast(
+                "✓ Status updated: " +
+                task.status
+            );
+
+        }
+
+    }
+    catch(error){
+
+        console.error(
+            "Status update error:",
+            error
+        );
+
+        showToast(
+            error.message ||
+            "Server connection error"
+        );
+
+    }
+}
+
+
+/* =========================================================
+   TASK DETAILS
+========================================================= */
+
+function viewDetails(id){
+
+    const task =
+        tasks.find(
+            item => String(item.id) === String(id)
+        );
+
+    if(!task){
+        showToast("Task not found");
+        return;
+    }
+
+    document
+        .getElementById("modalTitle")
+        .innerText =
+        task.title;
+
+    document
+        .getElementById("modalLocation")
+        .innerText =
+        `${task.location} • ${task.distance}`;
+
+    document
+        .getElementById("modalTime")
+        .innerText =
+        task.time;
+
+    document
+        .getElementById("modalPriority")
+        .innerText =
+        task.priority;
+
+    document
+        .getElementById("modalVolunteers")
+        .innerText =
+        task.volunteers;
+
+    document
+        .getElementById("modalDescription")
+        .innerText =
+        task.description ||
+        "No description provided.";
+
+    document
+        .getElementById("modalResources")
+        .innerText =
+        task.resources;
+
+    document
+        .getElementById("modalAccept")
+        .onclick = () => {
+
+            closeModal();
+
+            acceptTask(task.id);
+
+        };
+
+    document
+        .getElementById("taskModal")
+        .classList.add("show");
+}
+
+
+function closeModal(){
+
+    document
+        .getElementById("taskModal")
+        .classList.remove("show");
+}
+
+
+/* =========================================================
+   HOME
+========================================================= */
+
+function goHome(){
+
+    hidePages();
+
+    document
+        .getElementById("homePage")
+        .classList.add("active");
+
+    document
+        .getElementById("headerTitle")
+        .innerText = "Home";
+
+    setNav("home");
+
+    updateCounts();
+}
+
+
+/* =========================================================
+   MAP
+========================================================= */
+
+function goMap(){
+
+    hidePages();
+
+    document
+        .getElementById("mapPage")
+        .classList.add("active");
+
+    document
+        .getElementById("headerTitle")
+        .innerText = "Map";
+
+    setNav("map");
+
+    setTimeout(() => {
+
+        initializeMap();
+
+        if(userLocation){
+            map.setView(
+                [
+                    userLocation.lat,
+                    userLocation.lng
+                ],
+                15
+            );
+        }
+
+        loadMapTasks();
+
+    },100);
+}
+
+
+/* =========================================================
+   INITIALIZE MAP
+========================================================= */
+
+function initializeMap(){
+
+    if(map){
+        map.invalidateSize();
+        return;
+    }
+
+    /*
+       Default center is India.
+       It will immediately change to the
+       user's actual location when available.
+    */
+
+    map =
+        L.map("liveMap")
+            .setView(
+                [20.5937,78.9629],
+                5
+            );
+
+    L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+            maxZoom:19,
+            attribution:
+                '&copy; OpenStreetMap contributors'
+        }
+    ).addTo(map);
+
+    startLiveLocation();
+
+}
+
+
+/* =========================================================
+   LIVE LOCATION
+========================================================= */
+
+function startLiveLocation(){
+
+    const status =
+        document.getElementById(
+            "locationStatus"
+        );
+
+    if(!navigator.geolocation){
+
+        status.innerText =
+            "❌ Your browser does not support live location.";
+
+        return;
+    }
+
+    status.innerText =
+        "📍 Requesting your current location...";
+
+    navigator.geolocation.watchPosition(
+
+        function(position){
+
+            const lat =
+                position.coords.latitude;
+
+            const lng =
+                position.coords.longitude;
+
+            const accuracy =
+                position.coords.accuracy;
+
+            userLocation = {
+                lat:lat,
+                lng:lng,
+                accuracy:accuracy
+            };
+
+            updateUserMarker();
+
+            status.innerText =
+                `📍 Live location active • Accuracy approximately ${Math.round(accuracy)}m`;
+
+        },
+
+        function(error){
+
+            console.error(
+                "Location error:",
+                error
+            );
+
+            if(error.code === 1){
+
+                status.innerText =
+                    "⚠️ Location permission denied. Please allow location access in your browser.";
+
+            }else{
+
+                status.innerText =
+                    "⚠️ Unable to get your current location.";
+
+            }
+
+        },
+
+        {
+            enableHighAccuracy:true,
+            maximumAge:5000,
+            timeout:15000
+        }
+    );
+}
+
+
+/* =========================================================
+   UPDATE USER MARKER
+========================================================= */
+
+function updateUserMarker(){
+
+    if(!map || !userLocation){
+        return;
+    }
+
+    const lat =
+        userLocation.lat;
+
+    const lng =
+        userLocation.lng;
+
+    if(!userMarker){
+
+        userMarker =
+            L.marker(
+                [lat,lng]
+            )
+            .addTo(map)
+            .bindPopup(
+                "<b>📍 You are here</b>"
+            );
+
+        userCircle =
+            L.circle(
+                [lat,lng],
+                {
+                    radius:userLocation.accuracy,
+                    fillOpacity:.12
+                }
+            )
+            .addTo(map);
+
+        map.setView(
+            [lat,lng],
+            15
+        );
+
+    }else{
+
+        userMarker.setLatLng(
+            [lat,lng]
+        );
+
+        userCircle.setLatLng(
+            [lat,lng]
+        );
+
+        userCircle.setRadius(
+            userLocation.accuracy
+        );
+
+    }
+}
+
+
+/* =========================================================
+   LOCATE ME
+========================================================= */
+
+function locateMe(){
+
+    if(!map){
+
+        goMap();
+
+        return;
+    }
+
+    if(!userLocation){
+
+        showToast(
+            "Waiting for your location..."
+        );
+
+        return;
+    }
+
+    map.setView(
+        [
+            userLocation.lat,
+            userLocation.lng
+        ],
+        17
+    );
+
+    if(userMarker){
+        userMarker.openPopup();
+    }
+}
+
+
+/* =========================================================
+   MAP TASK MARKERS
+========================================================= */
+
+function loadMapTasks(){
+
+    if(!map){
+        return;
+    }
+
+    /*
+       Remove only task markers.
+    */
+
+    document
+        .querySelectorAll(".task-map-marker")
+        .forEach(element => element.remove());
+
+    /*
+       Create markers for tasks that contain
+       latitude and longitude.
+    */
+
+    tasks.forEach(task => {
+
+        if(
+            task.latitude === null ||
+            task.longitude === null
+        ){
+            return;
+        }
+
+        const lat =
+            Number(task.latitude);
+
+        const lng =
+            Number(task.longitude);
+
+        if(
+            Number.isNaN(lat) ||
+            Number.isNaN(lng)
+        ){
+            return;
+        }
+
+        const marker =
+            L.marker(
+                [lat,lng],
+                {
+                    title:task.title
+                }
+            )
+            .addTo(map)
+            .bindPopup(`
+                <b>${escapeHTML(task.title)}</b>
+                <br>
+                📍 ${escapeHTML(task.location)}
+                <br><br>
+                <button
+                    onclick="openTaskFromMap('${escapeHTML(task.id)}')"
+                    style="
+                        border:none;
+                        background:#078653;
+                        color:white;
+                        padding:7px 10px;
+                        border-radius:6px;
+                        cursor:pointer;">
+                    View Task
+                </button>
+            `);
+
+        marker
+            .getElement()
+            ?.classList.add(
+                "task-map-marker"
+            );
+
+    });
+
+}
+
+
+function openTaskFromMap(id){
+
+    goTasks();
+
+    setTimeout(() => {
+        viewDetails(id);
+    },300);
+}
+
+
+/* =========================================================
+   CHAT NAVIGATION
+========================================================= */
+
+function goChat(){
+
+    hidePages();
+
+    document
+        .getElementById("chatPage")
+        .classList.add("active");
+
+    document
+        .getElementById("headerTitle")
+        .innerText = "Chat";
+
+    setNav("chat");
+}
+
+
+/* =========================================================
+   PROFILE
+========================================================= */
+
+function goProfile(){
+
+    hidePages();
+
+    document
+        .getElementById("profilePage")
+        .classList.add("active");
+
+    document
+        .getElementById("headerTitle")
+        .innerText = "Profile";
+
+    setNav("profile");
+
+    loadProfile();
+}
+
+
+/* =========================================================
+   HIDE PAGES
+========================================================= */
+
+function hidePages(){
+
+    document
+        .querySelectorAll(".page")
+        .forEach(page => {
+
+            page.classList.remove("active");
+
+        });
+}
+
+
+/* =========================================================
+   NAV
+========================================================= */
+
+function setNav(page){
+
+    document
+        .querySelectorAll(".nav-btn")
+        .forEach(button => {
+
+            button.classList.remove("active");
+
+        });
+
+    const map = {
+        home:"homeNav",
+        map:"mapNav",
+        tasks:"tasksNav",
+        chat:"chatNav",
+        profile:"profileNav"
+    };
+
+    if(map[page]){
+
+        document
+            .getElementById(map[page])
+            .classList.add("active");
+
+    }
+}
+
+
+/* =========================================================
+   COUNTS
+========================================================= */
+
+function updateCounts(){
+
+    document
+        .getElementById("availableCount")
+        .innerText =
+        `${tasks.length} tasks`;
+
+    document
+        .getElementById("myTaskCount")
+        .innerText =
+        `${myTasks.length} accepted`;
+}
+
+
+/* =========================================================
+   CHAT OPEN
+========================================================= */
+
+function openChat(name){
+
+    currentChat = name;
+
+    document
+        .getElementById("chatPerson")
+        .innerText = name;
+
+    document
+        .getElementById("chatWindow")
+        .style.display = "block";
+
+    /*
+       Create history automatically.
+    */
+
+    if(!chatHistory[name]){
+
+        chatHistory[name] = [];
+
+        if(name === "AI Emergency Assistant"){
+
+            chatHistory[name].push({
+                sender:"ai",
+                message:
+                    "Hello! 👋 I am the emergency assistant. You can ask me about your tasks, task status, location, volunteer work or emergency-response guidance."
+            });
+
+        }else{
+
+            chatHistory[name].push({
+                sender:"team",
+                message:
+                    `Hello! 👋 ${name} here. How can we help you?`
+            });
+
+        }
+    }
+
+    renderChat(name);
+
+    setTimeout(() => {
+
+        document
+            .getElementById("messageInput")
+            .focus();
+
+    },100);
+}
+
+
+/* =========================================================
+   CLOSE CHAT
+========================================================= */
+
+function closeChat(){
+
+    document
+        .getElementById("chatWindow")
+        .style.display = "none";
+
+    currentChat = "";
+}
+
+
+/* =========================================================
+   RENDER CHAT
+========================================================= */
+
+function renderChat(name){
+
+    const messages =
+        document.getElementById("messages");
+
+    messages.innerHTML = "";
+
+    const history =
+        chatHistory[name] || [];
+
+    history.forEach(chat => {
+
+        const message =
+            document.createElement("div");
+
+        message.className =
+            "message " +
+            (
+                chat.sender === "user"
+                    ? "user"
+                    : chat.sender === "ai"
+                        ? "ai"
+                        : "team"
+            );
+
+        message.innerText =
+            chat.message;
+
+        messages.appendChild(message);
+
+    });
+
+    messages.scrollTop =
+        messages.scrollHeight;
+}
+
+
+/* =========================================================
+   SEND MESSAGE
+========================================================= */
+
+async function sendMessage(){
+
+    const input =
+        document.getElementById(
+            "messageInput"
+        );
+
+    const message =
+        input.value.trim();
+
+    if(!message){
+        return;
+    }
+
+    const person =
+        currentChat;
+
+    if(!person){
+        return;
+    }
+
+    if(!chatHistory[person]){
+        chatHistory[person] = [];
+    }
+
+    chatHistory[person].push({
+        sender:"user",
+        message:message
+    });
+
+    input.value = "";
+
+    renderChat(person);
+
+    if(person === "AI Emergency Assistant"){
+
+        await sendAIMessage(
+            person,
+            message
+        );
+
+    }else{
+
+        /*
+           Team chat uses the existing local
+           emergency-response reply system.
+        */
+
+        showTyping();
+
+        setTimeout(() => {
+
+            const reply =
+                getTeamReply(
+                    person,
+                    message
+                );
+
+            hideTyping();
+
+            chatHistory[person].push({
+                sender:"team",
+                message:reply
+            });
+
+            renderChat(person);
+
+        },700);
+
+    }
+}
+
+
+/* =========================================================
+   AI CHAT
+========================================================= */
+
+async function sendAIMessage(
+    person,
+    message
+){
+
+    showTyping();
+
+    /*
+       Try the project's backend AI endpoint first.
+
+       Expected optional endpoint:
+       POST /api/chat
+
+       Body:
+       {
+          message,
+          userId,
+          role,
+          history
+       }
+    */
+
+    try{
+
+        const response =
+            await fetch(
+                "/api/chat",
+                {
+                    method:"POST",
+                    headers:{
+                        "Content-Type":"application/json"
+                    },
+                    body:JSON.stringify({
+
+                        message:message,
+
+                        userId:
+                            localStorage.getItem(
+                                "userId"
+                            ),
+
+                        role:"volunteer",
+
+                        history:
+                            chatHistory[person]
+                                .slice(-10)
+
+                    })
+                }
+            );
+
+        /*
+           If the endpoint does not exist,
+           use the local assistant below.
+        */
+
+        if(response.ok){
+
+            const data =
+                await response.json();
+
+            const reply =
+                data.reply ||
+                data.message ||
+                data.response;
+
+            if(reply){
+
+                hideTyping();
+
+                chatHistory[person].push({
+                    sender:"ai",
+                    message:reply
+                });
+
+                renderChat(person);
+
+                return;
+            }
+
+        }
+
+    }
+    catch(error){
+
+        console.warn(
+            "AI backend unavailable. Using emergency assistant fallback.",
+            error
+        );
+
+    }
+
+    /*
+       Backend AI unavailable:
+       still provide a useful response.
+    */
+
+    const reply =
+        getEmergencyAIReply(message);
+
+    hideTyping();
+
+    chatHistory[person].push({
+        sender:"ai",
+        message:reply
+    });
+
+    renderChat(person);
+}
+
+
+/* =========================================================
+   EMERGENCY AI FALLBACK
+========================================================= */
+
+function getEmergencyAIReply(message){
+
+    const text =
+        message.toLowerCase();
+
+    if(
+        text.includes("hello") ||
+        text.includes("hi") ||
+        text.includes("hey")
+    ){
+
+        return "Hello! 👋 I am your emergency-response assistant. You can ask me about your assigned task, task status, location, safety or what to do next.";
+    }
+
+
+    if(
+        text.includes("task") ||
+        text.includes("assigned")
+    ){
+
+        if(myTasks.length){
+
+            const task =
+                myTasks[0];
+
+            return `You currently have ${myTasks.length} assigned task(s). Your latest task is "${task.title}" with status "${task.status}". Open My Tasks to see the complete details.`;
+
+        }
+
+        return "You currently have no assigned tasks. Open the Tasks section to check for available tasks.";
+    }
+
+
+    if(
+        text.includes("status") ||
+        text.includes("completed") ||
+        text.includes("arrived")
+    ){
+
+        if(myTasks.length){
+
+            return myTasks
+                .map(task =>
+                    `${task.title}: ${task.status}`
+                )
+                .join("\n");
+
+        }
+
+        return "You do not currently have an assigned task.";
+    }
+
+
+    if(
+        text.includes("location") ||
+        text.includes("where am i") ||
+        text.includes("map")
+    ){
+
+        if(userLocation){
+
+            return `Your current location is approximately latitude ${userLocation.lat.toFixed(5)}, longitude ${userLocation.lng.toFixed(5)}. Open the Map section to see your live position.`;
+
+        }
+
+        return "I don't have your current location yet. Open the Map section and allow location permission.";
+    }
+
+
+    if(
+        text.includes("safe") ||
+        text.includes("safety")
+    ){
+
+        return "Stay with your assigned team, follow coordinator instructions, avoid unsafe areas, keep communication active, and update your task status as you progress.";
+    }
+
+
+    if(
+        text.includes("help") ||
+        text.includes("emergency")
+    ){
+
+        return "If this is an active emergency, contact the appropriate emergency service or your disaster coordinator immediately. For your volunteer task, open My Tasks and update the current status.";
+    }
+
+
+    if(
+        text.includes("how") &&
+        (
+            text.includes("complete") ||
+            text.includes("finish")
+        )
+    ){
+
+        return "Open My Tasks, follow the assigned task instructions, update your status through On the Way → Arrived → In Progress, and select the final status when the task is actually completed.";
+    }
+
+
+    return "I can help with your volunteer tasks, task status, location, safety and emergency-response guidance. Tell me what you need help with.";
+}
+
+
+/* =========================================================
+   TEAM REPLIES
+========================================================= */
+
+function getTeamReply(
+    team,
+    message
+){
+
+    const text =
+        message.toLowerCase();
+
+    if(
+        text.includes("hello") ||
+        text.includes("hi") ||
+        text.includes("hey")
+    ){
+
+        return `Hello! 👋 ${team} here. How can we help you?`;
+    }
+
+
+    if(
+        text.includes("instruction") ||
+        text.includes("what should i do") ||
+        text.includes("what do i do") ||
+        text.includes("what to do")
+    ){
+
+        return "Follow your assigned task instructions, reach the given location safely, stay connected with your team and update your task status after each stage.";
+    }
+
+
+    if(
+        text.includes("location") ||
+        text.includes("where") ||
+        text.includes("place") ||
+        text.includes("address")
+    ){
+
+        return "Please open the Tasks section to see your assigned task location. You can also open the Map section to view your current location.";
+    }
+
+
+    if(
+        text.includes("task") ||
+        text.includes("assigned") ||
+        text.includes("assignment")
+    ){
+
+        if(myTasks.length){
+
+            return `You currently have ${myTasks.length} assigned task(s). Open My Tasks to view them.`;
+
+        }
+
+        return "You currently have no assigned tasks.";
+    }
+
+
+    if(
+        text.includes("help") ||
+        text.includes("problem") ||
+        text.includes("emergency")
+    ){
+
+        return "Please explain the situation clearly. If there is immediate danger, contact the appropriate emergency service and your disaster coordinator.";
+    }
+
+
+    if(
+        text.includes("status") ||
+        text.includes("update") ||
+        text.includes("completed") ||
+        text.includes("arrived")
+    ){
+
+        return "You can update your task status from My Tasks. The available stages are Accepted, On the Way, Arrived, In Progress and Completed.";
+    }
+
+
+    if(team === "Medical Team"){
+
+        if(
+            text.includes("medical") ||
+            text.includes("medicine") ||
+            text.includes("doctor") ||
+            text.includes("first aid")
+        ){
+
+            return "Please follow the medical team's instructions and report the required medical support clearly.";
+        }
+
+    }
+
+
+    if(team === "Rescue Team"){
+
+        if(
+            text.includes("rescue") ||
+            text.includes("trapped")
+        ){
+
+            return "Stay with the rescue team, follow the team leader's instructions and avoid entering unsafe areas without proper authorization.";
+        }
+
+    }
+
+
+    return "Message received. Please tell us whether you need help with your task, location, instructions or status.";
+}
+
+
+/* =========================================================
+   ENTER KEY FOR CHAT
+========================================================= */
+
+document
+    .getElementById("messageInput")
+    .addEventListener(
+        "keydown",
+        function(event){
+
+            if(event.key === "Enter"){
+
+                event.preventDefault();
+
+                sendMessage();
+
+            }
+
+        }
+    );
+
+
+/* =========================================================
+   TYPING
+========================================================= */
+
+function showTyping(){
+
+    document
+        .getElementById("typing")
+        .style.display = "block";
+
+    const messages =
+        document.getElementById("messages");
+
+    messages.scrollTop =
+        messages.scrollHeight;
+}
+
+
+function hideTyping(){
+
+    document
+        .getElementById("typing")
+        .style.display = "none";
+}
+
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+function showToast(message){
+
+    const toast =
+        document.getElementById("toast");
+
+    toast.innerText =
+        message;
+
+    toast.classList.add("show");
+
+    setTimeout(() => {
+
+        toast.classList.remove("show");
+
+    },2500);
+}
+
+
+/* =========================================================
+   INITIALIZE
+========================================================= */
+
+async function initializeDashboard(){
+
+    loadProfile();
+
+    loadCompletedTasks();
+
+    await Promise.allSettled([
+        loadMyTasks(),
+        loadTasksFromServer()
+    ]);
+
+    updateCounts();
+
+    /*
+       Initialize map only after user opens Map.
+       This avoids asking for location unnecessarily.
+    */
+
+}
+
+
+/* =========================================================
+   START
+========================================================= */
+
+initializeDashboard();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>Donations</title>
+    <script src="api-config.js"></script>
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f5f6fa;
+        }
+
+        .phone {
+            width: 225px;
+            min-height: 455px;
+            background: #ffffff;
+            border: 1px solid #cfd5df;
+            border-radius: 18px;
+            padding: 18px 10px;
+            box-shadow:
+                0 8px 25px rgba(0, 0, 0, 0.05);
+        }
+
+        /* =========================
+           HEADER
+        ========================= */
+
+        .header {
+            height: 32px;
+            display: flex;
+            align-items: center;
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .back-btn {
+            width: 30px;
+            height: 30px;
+            border: none;
+            background: transparent;
+            font-size: 23px;
+            cursor: pointer;
+            color: #26364a;
+            border-radius: 7px;
+        }
+
+        .back-btn:hover {
+            background: #f0f2f6;
+        }
+
+        .title {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            font-weight: bold;
+            color: #202938;
+        }
+
+
+        /* =========================
+           SUPPORT CARD
+        ========================= */
+
+        .support-card {
+            min-height: 83px;
+            border-radius: 6px;
+            padding: 14px 12px;
+            color: white;
+            position: relative;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #078653,
+                    #078653
+                );
+
+            margin-bottom: 13px;
+            overflow: hidden;
+        }
+
+        .support-card h3 {
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .support-card p {
+            font-size: 9px;
+            line-height: 16px;
+            width: 105px;
+        }
+
+        .hands {
+            position: absolute;
+            right: 12px;
+            bottom: 12px;
+            font-size: 40px;
+        }
+
+
+        /* =========================
+           AMOUNT BUTTONS
+        ========================= */
+
+        .amounts {
+            display: grid;
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 6px;
+            margin-bottom: 24px;
+        }
+
+        .amount-btn {
+            height: 35px;
+            border: 1px solid #d9dde5;
+            background: #ffffff;
+            border-radius: 6px;
+            font-size: 10px;
+            cursor: pointer;
+            color: #26364a;
+        }
+
+        .amount-btn.active {
+            border: 2px solid #078653;
+            color: #078653;
+            font-weight: bold;
+            background: #f6f3ff;
+        }
+
+
+        /* =========================
+           CUSTOM AMOUNT
+        ========================= */
+
+        .custom-amount {
+            display: none;
+            width: 100%;
+            height: 35px;
+            border: 1px solid #d9dde5;
+            border-radius: 6px;
+            padding: 8px;
+            font-size: 11px;
+            margin-top: -18px;
+            margin-bottom: 15px;
+            outline: none;
+        }
+
+
+        /* =========================
+           PAYMENT METHOD
+        ========================= */
+
+        .payment-title {
+            font-size: 9px;
+            font-weight: bold;
+            color: #078653;
+            margin-bottom: 10px;
+        }
+
+        .payment-methods {
+            display: grid;
+            grid-template-columns:
+                1fr 1fr 1.35fr;
+
+            gap: 6px;
+            margin-bottom: 18px;
+        }
+
+        .payment-btn {
+            height: 34px;
+            border: 1px solid #d9dde5;
+            border-radius: 6px;
+            background: #ffffff;
+            font-size: 9px;
+            cursor: pointer;
+            color: #222;
+        }
+
+        .payment-btn.active {
+            border: 2px solid #078653;
+            background: #f6f3ff;
+            color: #078653;
+        }
+
+
+        /* =========================
+           DONATE BUTTON
+        ========================= */
+
+        .donate-btn {
+            width: 100%;
+            height: 37px;
+            border: none;
+            border-radius: 6px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #078653,
+                    #078653
+                );
+
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .donate-btn:hover {
+            opacity: 0.9;
+        }
+
+
+        /* =========================
+           FOOTER
+        ========================= */
+
+        .secure-text {
+            margin-top: 18px;
+            margin-left: 12px;
+            font-size: 9px;
+            color: #586273;
+            line-height: 13px;
+        }
+
+
+        /* =========================
+           SUCCESS POPUP
+        ========================= */
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+
+            justify-content: center;
+            align-items: center;
+
+            padding: 20px;
+        }
+
+        .modal-box {
+            width: 270px;
+            background: white;
+            border-radius: 14px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .modal-box h3 {
+            color: #34207e;
+            margin-bottom: 12px;
+            font-size: 17px;
+        }
+
+        .modal-box p {
+            font-size: 12px;
+            color: #555;
+            line-height: 20px;
+            margin-bottom: 18px;
+        }
+
+        .close-btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            background: #34207e;
+            color: white;
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+
+<div class="phone">
+
+
+    <!-- =========================
+         HEADER
+    ========================== -->
+
+    <div class="header">
+
+        <button class="back-btn"
+            onclick="goBack()">
+
+            ←
+
+        </button>
+
+        <div class="title">
+            Donations
+        </div>
+
+    </div>
+
+
+
+    <!-- =========================
+         SUPPORT CARD
+    ========================== -->
+
+    <div class="support-card">
+
+        <h3>
+            Support the Cause
+        </h3>
+
+        <p>
+            Your donation can save many lives.
+        </p>
+
+        <div class="hands">
+            ❤️
+        </div>
+
+    </div>
+
+
+
+    <!-- =========================
+         DONATION AMOUNTS
+    ========================== -->
+
+    <div class="amounts">
+
+        <button
+            class="amount-btn"
+            onclick="selectAmount(100, this)">
+
+            ₹100
+
+        </button>
+
+
+        <button
+            class="amount-btn"
+            onclick="selectAmount(300, this)">
+
+            ₹300
+
+        </button>
+
+
+        <button
+            class="amount-btn"
+            onclick="selectAmount(500, this)">
+
+            ₹500
+
+        </button>
+
+
+        <button
+            class="amount-btn"
+            onclick="selectOther(this)">
+
+            Other
+
+        </button>
+
+    </div>
+
+
+
+    <!-- CUSTOM AMOUNT -->
+
+    <input
+        type="number"
+        id="customAmount"
+        class="custom-amount"
+        placeholder="Enter donation amount"
+        min="1"
+    >
+
+
+
+    <!-- =========================
+         PAYMENT METHODS
+    ========================== -->
+
+    <div class="payment-title">
+
+        Payment Method
+
+    </div>
+
+
+    <div class="payment-methods">
+
+
+        <button
+            class="payment-btn active"
+            data-method="UPI"
+            onclick="selectPayment(this)">
+
+            ▶ UPI
+
+        </button>
+
+
+        <button
+            class="payment-btn"
+            data-method="Card"
+            onclick="selectPayment(this)">
+
+            ▣ Card
+
+        </button>
+
+
+        <button
+            class="payment-btn"
+            data-method="Net Banking"
+            onclick="selectPayment(this)">
+
+            Net Banking
+
+        </button>
+
+
+    </div>
+
+
+
+    <!-- =========================
+         DONATE BUTTON
+    ========================== -->
+
+    <button
+        class="donate-btn"
+        onclick="donateNow()">
+
+        Donate Now
+
+    </button>
+
+
+
+    <!-- FOOTER -->
+
+    <div class="secure-text">
+
+        Donations are secure and<br>
+        goes to verified organizations.
+
+    </div>
+
+
+</div>
+
+
+
+<!-- =========================
+     SUCCESS POPUP
+========================== -->
+
+<div class="modal" id="successModal">
+
+    <div class="modal-box">
+
+        <h3>
+            Thank You! ❤️
+        </h3>
+
+        <p id="successMessage">
+
+        </p>
+
+        <button
+            class="close-btn"
+            onclick="closeModal()">
+
+            Done
+
+        </button>
+
+    </div>
+
+</div>
+
+
+
+<script>
+
+
+/* =========================
+   BACK BUTTON
+========================= */
+
+function goBack() {
+
+    window.history.back();
+
+}
+
+
+
+/* =========================
+   SELECTED AMOUNT
+========================= */
+
+let selectedAmount = 0;
+
+
+
+function selectAmount(amount, button) {
+
+
+    selectedAmount = amount;
+
+
+    document
+        .getElementById("customAmount")
+        .style.display = "none";
+
+
+    document
+        .getElementById("customAmount")
+        .value = "";
+
+
+    document
+        .querySelectorAll(".amount-btn")
+        .forEach(btn => {
+
+            btn.classList.remove("active");
+
+        });
+
+
+    button.classList.add("active");
+
+
+}
+
+
+
+/* =========================
+   OTHER AMOUNT
+========================= */
+
+function selectOther(button) {
+
+
+    selectedAmount = 0;
+
+
+    document
+        .querySelectorAll(".amount-btn")
+        .forEach(btn => {
+
+            btn.classList.remove("active");
+
+        });
+
+
+    button.classList.add("active");
+
+
+    document
+        .getElementById("customAmount")
+        .style.display = "block";
+
+
+    document
+        .getElementById("customAmount")
+        .focus();
+
+}
+
+
+
+/* =========================
+   PAYMENT METHOD
+========================= */
+
+let selectedPayment = "UPI";
+
+
+function selectPayment(button) {
+
+
+    document
+        .querySelectorAll(".payment-btn")
+        .forEach(btn => {
+
+            btn.classList.remove("active");
+
+        });
+
+
+    button.classList.add("active");
+
+
+    selectedPayment =
+        button.dataset.method;
+
+}
+
+
+
+/* =========================
+   DONATE NOW
+========================= */
+
+async function donateNow() {
+
+    let finalAmount = selectedAmount;
+
+    const customAmount =
+        Number(document.getElementById("customAmount").value);
+
+    // Other amount selected
+    if (selectedAmount === 0 && customAmount > 0) {
+        finalAmount = customAmount;
+    }
+
+    // Validation
+    if (!finalAmount || finalAmount <= 0) {
+        alert("Please select or enter a donation amount.");
+        return;
+    }
+
+    try {
+
+        const donorId = localStorage.getItem("userId");
+
+        const response = await fetch(
+            "/api/donations",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    donorId: donorId,
+                    amount: finalAmount,
+                    paymentMethod: selectedPayment
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            alert(data.message || "Donation failed.");
+            return;
+        }
+
+        // Success message
+        document.getElementById("successMessage").innerHTML =
+            `You are donating <b>₹${finalAmount}</b>
+            using <b>${selectedPayment}</b>.<br><br>
+            Thank you for supporting the cause!`;
+
+        document.getElementById("successModal").style.display = "flex";
+
+
+        // Save donation history locally also
+        const donation = {
+            amount: finalAmount,
+            paymentMethod: selectedPayment,
+            date: new Date().toLocaleString()
+        };
+
+        let donationHistory =
+            JSON.parse(localStorage.getItem("donations")) || [];
+
+        donationHistory.push(donation);
+
+        localStorage.setItem(
+            "donations",
+            JSON.stringify(donationHistory)
+        );
+
+    } catch (error) {
+
+        console.error(error);
+        alert("Server connection failed.");
+
+    }
+}
+
+/* =========================
+   CLOSE POPUP
+========================= */
+
+function closeModal() {
+
+
+    document.getElementById(
+        "successModal"
+    ).style.display = "none";
+
+
+    window.history.back();
+
+}
+
+
+</script>
+
+
+</body>
+
+</html>

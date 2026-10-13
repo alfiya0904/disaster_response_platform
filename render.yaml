@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: disaster-response-backend
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URL
+        sync: false

@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Login Page</title>
+<script src="api-config.js"></script>
+
+<style>
+
+/* =========================
+   BASIC RESET
+========================= */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+
+/* =========================
+   BODY
+========================= */
+
+body {
+    background: #f4f5f7;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+}
+
+
+/* =========================
+   PHONE CONTAINER
+========================= */
+
+.phone {
+    width: 375px;
+    min-height: 100vh;
+    background: #f7f7f7;
+    padding: 18px 14px;
+}
+
+
+/* =========================
+   HUG LOGO
+========================= */
+
+.logo-section {
+    text-align: center;
+    margin-top: 2px;
+    margin-bottom: 20px;
+}
+
+.logo {
+    width: 76px;
+    height: 72px;
+    margin: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 70px;
+}
+
+
+/* =========================
+   LOGO SHAPES
+========================= */
+
+.person {
+    position: absolute;
+    left: 25px;
+    top: 0;
+    width: 24px;
+    height: 31px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #33205f, #7866ad);
+}
+
+.body-shape {
+    position: absolute;
+    left: 10px;
+    top: 20px;
+    width: 54px;
+    height: 52px;
+    background: linear-gradient(135deg, #362164, #816fb3);
+    border-radius: 24px 24px 5px 5px;
+}
+
+.arm {
+    position: absolute;
+    width: 43px;
+    height: 10px;
+    border-radius: 10px;
+    background: #493274;
+    transform: rotate(-20deg);
+    left: 27px;
+    top: 31px;
+}
+
+.arm2 {
+    position: absolute;
+    width: 33px;
+    height: 10px;
+    border-radius: 10px;
+    background: #3b2868;
+    transform: rotate(3deg);
+    left: 17px;
+    top: 51px;
+}
+
+
+/* =========================
+   HEADING
+========================= */
+
+h1 {
+    text-align: center;
+    font-size: 21px;
+    color: #202b3a;
+    margin-bottom: 6px;
+}
+
+.subtitle {
+    text-align: center;
+    color: #677180;
+    font-size: 14px;
+    margin-bottom: 27px;
+}
+
+
+/* =========================
+   INPUT BOX
+========================= */
+
+.input-group {
+    margin-bottom: 16px;
+}
+
+.input-box {
+    width: 100%;
+    height: 49px;
+    border: 1px solid #ccd3db;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    background: #fafafa;
+}
+
+.input-box:focus-within {
+    border-color: #2f61bf;
+    box-shadow: 0 0 0 2px rgba(47, 97, 191, 0.08);
+}
+
+.icon {
+    width: 28px;
+    margin-right: 8px;
+    color: #65717f;
+    font-size: 22px;
+}
+
+input,
+select {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 13px;
+    color: #26313d;
+}
+
+input::placeholder {
+    color: #6d7785;
+}
+
+
+/* =========================
+   ROLE DROPDOWN
+========================= */
+
+.role-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.role-select {
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    color: #6d7785;
+    padding-right: 25px;
+}
+
+.role-wrapper::after {
+    content: "▼";
+    position: absolute;
+    right: 2px;
+    top: 50%;
+    transform: translateY(-55%);
+    font-size: 18px;
+    color: #000102;
+    pointer-events: none;
+}
+
+
+/* =========================
+   PASSWORD
+========================= */
+
+.password-wrapper {
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.eye-btn {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+
+/* =========================
+   FORGOT PASSWORD
+========================= */
+
+.forgot {
+    text-align: right;
+    margin-top: 2px;
+    margin-bottom: 26px;
+}
+
+.forgot a {
+    text-decoration: none;
+    color: #163a79;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+
+/* =========================
+   LOGIN BUTTON
+========================= */
+
+.login-btn {
+    width: 100%;
+    height: 48px;
+    border: none;
+    border-radius: 7px;
+    background: #078653;
+    color: white;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 28px;
+}
+
+.login-btn:hover {
+    background: #078653;
+}
+
+
+/* =========================
+   DIVIDER
+========================= */
+
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+    color: #4c5663;
+    font-size: 12px;
+}
+
+.divider::before,
+.divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #cdd2d8;
+}
+
+
+/* =========================
+   CREATE ACCOUNT
+========================= */
+
+.create-btn {
+    width: 100%;
+    height: 48px;
+    background: transparent;
+    border: 1px solid #ccd3db;
+    border-radius: 8px;
+    color: #1e2731;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+/* =========================
+   CREATE NEW ACCOUNT
+========================= */
+
+
+
+/* =========================
+   FORGOT PASSWORD PAGE
+========================= */
+
+.forgot-page {
+    display: none;
+}
+
+.back-btn {
+    border: none;
+    background: none;
+    font-size: 15px;
+    color: #078653;
+    cursor: pointer;
+    margin-bottom: 40px;
+}
+
+.forgot-page h2 {
+    color: #202b3a;
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.forgot-text {
+    color: #677180;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 30px;
+}
+
+.reset-btn {
+    width: 100%;
+    height: 48px;
+    border: none;
+    border-radius: 7px;
+    background: #078653;
+    color: white;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.message {
+    display: none;
+    margin-top: 20px;
+    padding: 12px;
+    border-radius: 8px;
+    background: #e6f4ea;
+    color: #187a3d;
+    text-align: center;
+    font-size: 13px;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 375px) {
+
+    .phone {
+        width: 100%;
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+<div class="phone">
+
+
+<!-- =========================
+     LOGIN PAGE
+========================= -->
+
+<div id="loginPage">
+
+
+    <!-- HUG LOGO -->
+
+    <div class="logo-section">
+
+        <div class="logo">
+            🫂
+        </div>
+
+    </div>
+
+
+    <!-- HEADING -->
+
+    <h1>Welcome Back!</h1>
+
+    <p class="subtitle">
+        Login to continue
+    </p>
+
+
+    <!-- =========================
+         ROLE
+    ========================= -->
+
+    <div class="input-group">
+
+        <div class="input-box">
+
+            <span class="icon">
+                👤
+            </span>
+
+            <div class="role-wrapper">
+
+                <select
+                    id="role"
+                    class="role-select"
+                >
+
+                    <option
+                        value=""
+                        selected
+                        disabled
+                    >
+                        Select Role
+                    </option>
+
+
+                    <!-- ADMIN -->
+
+                    <option value="admin">
+                        Admin
+                    </option>
+
+
+                    <!-- VOLUNTEER -->
+
+                    <option value="volunteer">
+                        Volunteer
+                    </option>
+
+
+                    <!-- EMERGENCY USER -->
+
+                    <option value="emergency user">
+                        Emergency User
+                    </option>
+
+
+                    <!-- DONOR - NEW OPTION -->
+
+                    <option value="donor">
+                        Donor
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         EMAIL / PHONE
+    ========================= -->
+
+    <div class="input-group">
+
+        <div class="input-box">
+
+            <span class="icon">
+                ✉️
+            </span>
+
+            <input
+                type="text"
+                id="email"
+                placeholder="Email / Phone"
+            >
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         PASSWORD
+    ========================= -->
+
+    <div class="input-group">
+
+        <div class="input-box">
+
+            <span class="icon">
+                🔑
+            </span>
+
+            <div class="password-wrapper">
+
+                <input
+                    type="password"
+                    id="password"
+                    placeholder="Password"
+                >
+
+                <button
+                    type="button"
+                    class="eye-btn"
+                    onclick="togglePassword()"
+                >
+                    👁
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         FORGOT PASSWORD
+    ========================= -->
+
+    <div class="forgot">
+
+        <a onclick="showForgotPassword()">
+            Forgot Password?
+        </a>
+
+    </div>
+
+
+    <!-- =========================
+         LOGIN BUTTON
+    ========================= -->
+
+    <button
+        class="login-btn"
+        onclick="login()"
+    >
+        Login
+    </button>
+
+
+    <!-- =========================
+         DIVIDER
+    ========================= -->
+
+    <div class="divider">
+
+        <span>
+            or
+        </span>
+
+    </div>
+
+
+    <!-- =========================
+         CREATE ACCOUNT
+    ========================= -->
+
+    <button
+        class="create-btn"
+        onclick="createAccount()"
+    >
+        Create New Account
+    </button>
+
+
+</div>
+
+
+
+<!-- =========================
+     FORGOT PASSWORD PAGE
+========================= -->
+
+<div
+    id="forgotPage"
+    class="forgot-page"
+>
+
+
+    <!-- BACK BUTTON -->
+
+    <button
+        class="back-btn"
+        onclick="backToLogin()"
+    >
+        ← Back
+    </button>
+
+
+    <h2>
+        Forgot Password?
+    </h2>
+
+
+    <p class="forgot-text">
+
+        Enter your registered email address or phone number.
+        We will send you instructions to reset your password.
+
+    </p>
+
+
+    <!-- EMAIL / PHONE -->
+
+    <div class="input-group">
+
+        <div class="input-box">
+
+            <span class="icon">
+                ♙
+            </span>
+
+            <input
+                type="text"
+                id="resetEmail"
+                placeholder="Email / Phone"
+            >
+
+        </div>
+
+    </div>
+
+
+    <!-- SEND BUTTON -->
+
+    <button
+        class="reset-btn"
+        onclick="sendResetLink()"
+    >
+        Send Reset Link
+    </button>
+
+
+    <!-- SUCCESS MESSAGE -->
+
+    <div
+        id="successMessage"
+        class="message"
+    >
+        Reset instructions have been sent successfully!
+    </div>
+
+
+</div>
+
+
+</div>
+
+
+<script>
+
+
+/* =========================
+   SHOW / HIDE PASSWORD
+========================= */
+
+function togglePassword() {
+
+    const password =
+        document.getElementById("password");
+
+
+    if (password.type === "password") {
+
+        password.type = "text";
+
+    }
+
+    else {
+
+        password.type = "password";
+
+    }
+
+}
+
+
+/* =========================
+   OPEN FORGOT PASSWORD
+========================= */
+
+function showForgotPassword() {
+
+    document.getElementById("loginPage").style.display =
+        "none";
+
+    document.getElementById("forgotPage").style.display =
+        "block";
+
+}
+
+
+/* =========================
+   BACK TO LOGIN
+========================= */
+
+function backToLogin() {
+
+    document.getElementById("forgotPage").style.display =
+        "none";
+
+    document.getElementById("loginPage").style.display =
+        "block";
+
+}
+
+
+/* =========================
+   SEND RESET LINK
+========================= */
+
+function sendResetLink() {
+
+    const resetEmail =
+        document.getElementById("resetEmail").value;
+
+
+    if (resetEmail === "") {
+
+        alert(
+            "Please enter your Email or Phone Number"
+        );
+
+        return;
+
+    }
+
+
+    document.getElementById("successMessage")
+        .style.display = "block";
+
+
+    document.getElementById("resetEmail").value = "";
+
+}
+
+
+/* =========================
+   LOGIN FUNCTION
+async function login========================= */
+
+async function login() {
+
+    const role = document.getElementById("role").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+
+    if (!role) {
+        alert("Please select your role");
+        return;
+    }
+
+    if (!email) {
+        alert("Please enter Email or Phone");
+        return;
+    }
+
+    if (!password) {
+        alert("Please enter Password");
+        return;
+    }
+
+    try {
+        const response = await fetch("/api/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                role,
+                emailOrPhone: email,
+                password
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            alert(data.message || "Login failed.");
+            return;
+        }
+
+        // Store the authenticated user's data for all connected pages.
+        localStorage.setItem("userId", String(data.userId));
+        localStorage.setItem("userRole", data.role);
+        localStorage.setItem("emailOrPhone", data.emailOrPhone || email);
+        localStorage.setItem("userName", data.name || "");
+        localStorage.setItem("userPhone", data.phone || "");
+        localStorage.setItem("userLocation", data.location || "");
+
+        const pages = {
+            "admin": "admin.html",
+            "volunteer": "volunteer.html",
+            "emergency user": "emergency.html",
+            "donor": "donor.html"
+        };
+
+        const roleKey = String(data.role || "").trim().toLowerCase();
+        const targetPage = pages[roleKey];
+
+        if (!targetPage) {
+            alert("Login successful, but no page is configured for this role.");
+            return;
+        }
+
+        alert(`${data.name || data.role} Login Successful!`);
+        window.location.assign(targetPage);
+
+    } catch (error) {
+        console.error("Login error:", error);
+        alert("Server connection failed. Please start the Node.js server and try again.");
+    }
+
+}
+
+  async function createAccount() {
+
+    const role = document.getElementById("role").value;
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    if (role === "") {
+        alert("Please select your role");
+        return;
+    }
+
+    if (email === "") {
+        alert("Please enter Email or Phone");
+        return;
+    }
+
+    if (password === "") {
+        alert("Please enter Password");
+        return;
+    }
+
+    try {
+
+        const response = await fetch(
+            "/api/register",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    role: role,
+                    emailOrPhone: email,
+                    password: password
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            alert(data.message || "Account creation failed");
+            return;
+        }
+
+        alert("Account Created Successfully! Now you can Login.");
+
+    } catch (error) {
+
+        console.error(error);
+        alert("Server connection failed.");
+
+    }
+}
+
+</script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,2191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Emergency User</title>
+    <script src="api-config.js"></script>
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+
+        body {
+            background: #f4f6fa;
+            color: #24364b;
+        }
+
+
+        .phone {
+            width: 100%;
+            max-width: 430px;
+            min-height: 100vh;
+            margin: auto;
+            background: #f4f6fa;
+            overflow-x: hidden;
+        }
+
+
+        /* =========================
+           TOP HEADER
+        ========================= */
+
+        .header {
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            background: #f4f6fa;
+        }
+
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+
+        .back-btn {
+            width: 42px;
+            height: 42px;
+            border: none;
+            border-radius: 50%;
+            background: white;
+            font-size: 24px;
+            color: #405166;
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+
+
+        .page-title {
+            font-size: 21px;
+            font-weight: bold;
+        }
+
+
+        /* THREE LINE MENU */
+
+        .menu-btn {
+            width: 42px;
+            height: 42px;
+            border: none;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            font-size: 24px;
+            color: #405166;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+
+
+        /* =========================
+           PROFILE PAGE
+        ========================= */
+
+        .page {
+            display: none;
+            padding: 0 15px 30px;
+        }
+
+
+        .page.active {
+            display: block;
+        }
+
+
+        .profile-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.07);
+            margin-bottom: 20px;
+        }
+
+
+        .profile-image {
+            width: auto;
+            height: auto;
+            margin: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 55px;
+            color: white;
+            background: transparent;
+            border: nonr;
+            border-radius: 0;
+        }
+
+
+        .user-name {
+            margin-top: 18px;
+            font-size: 21px;
+            font-weight: bold;
+        }
+
+
+        .role-badge {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 8px 17px;
+            border-radius: 20px;
+            background: #e4f7e9;
+            color: #21823f;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+
+        /* DETAILS */
+
+        .details-card {
+            background: white;
+            border-radius: 18px;
+            padding: 6px 18px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.07);
+        }
+
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            padding: 17px 0;
+            border-bottom: 1px solid #e7e9ed;
+        }
+
+
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+
+
+        .detail-icon {
+            width: 45px;
+            height: 45px;
+            background: #edf2fb;
+            border-radius: 13px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            margin-right: 14px;
+        }
+
+
+        .detail-label {
+            font-size: 11px;
+            color: #718096;
+            margin-bottom: 5px;
+        }
+
+
+        .detail-value {
+            font-size: 14px;
+            color: #27384b;
+        }
+
+
+        .edit-btn,
+        .logout-btn,
+        .primary-btn {
+            width: 100%;
+            height: 50px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+
+        .edit-btn,
+        .primary-btn {
+            border: none;
+            background: #078653;
+            color: white;
+            margin-top: 25px;
+        }
+
+
+        .logout-btn {
+            margin-top: 15px;
+            background: white;
+            border: 1px solid #078653;
+            color: #078653;
+        }
+
+
+        /* =========================
+           SIDE MENU
+        ========================= */
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.35);
+            display: none;
+            z-index: 100;
+        }
+
+
+        .overlay.show {
+            display: block;
+        }
+
+
+        .side-menu {
+            position: fixed;
+            top: 0;
+            right: -330px;
+            width: 300px;
+            height: 100%;
+            background: white;
+            z-index: 101;
+            transition: 0.3s;
+            overflow-y: auto;
+            padding-bottom: 30px;
+        }
+
+
+        .side-menu.open {
+            right: 0;
+        }
+
+
+        .menu-header {
+            padding: 25px 20px;
+            background: #078653;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+
+        .menu-header h2 {
+            font-size: 20px;
+        }
+
+
+        .close-btn {
+            border: none;
+            background: transparent;
+            color: white;
+            font-size: 27px;
+            cursor: pointer;
+        }
+
+
+        .menu-item {
+            width: 100%;
+            border: none;
+            background: white;
+            padding: 17px 20px;
+            text-align: left;
+            font-size: 14px;
+            color: #314156;
+            cursor: pointer;
+            border-bottom: 1px solid #edf0f4;
+        }
+
+
+        .menu-item:hover {
+            background: #f1f5fc;
+        }
+
+
+        /* =========================
+           SOS BUTTON
+        ========================= */
+
+        .sos-box {
+            background: white;
+            border-radius: 20px;
+            padding: 25px 20px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.07);
+        }
+
+
+        .sos-button {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            border: 8px solid #ffe3e3;
+            background: #e53935;
+            color: white;
+            font-size: 27px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(229,57,53,0.35);
+            margin: 20px auto;
+            display: block;
+        }
+
+
+        .sos-text {
+            color: #718096;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+
+        /* =========================
+           COMMON CARDS
+        ========================= */
+
+        .section-title {
+            font-size: 21px;
+            margin-bottom: 20px;
+        }
+
+
+        .card {
+            background: white;
+            border-radius: 18px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.07);
+        }
+
+
+        .form-group {
+            margin-bottom: 17px;
+        }
+
+
+        label {
+            display: block;
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 7px;
+        }
+
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            border: 1px solid #dbe1e8;
+            border-radius: 9px;
+            padding: 13px;
+            outline: none;
+            font-size: 14px;
+            background: #fafbfd;
+        }
+
+
+        textarea {
+            height: 100px;
+            resize: none;
+        }
+
+
+        .choice-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+
+        .choice {
+            border: 1px solid #dbe1e8;
+            background: white;
+            padding: 13px 8px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 12px;
+            text-align: center;
+        }
+
+
+        .choice.selected {
+            background: #eaf1ff;
+            border-color: #365fa8;
+            color: #244e95;
+        }
+
+
+        /* REQUEST STATUS */
+
+        .request-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #edf0f3;
+        }
+
+
+        .request-item:last-child {
+            border-bottom: none;
+        }
+
+
+        .request-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+
+        .status {
+            padding: 6px 10px;
+            border-radius: 15px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+
+        .pending {
+            background: #fff3cd;
+            color: #a57800;
+        }
+
+
+        .progress {
+            background: #e3f0ff;
+            color: #2165b2;
+        }
+
+
+        .resolved {
+            background: #e3f7e9;
+            color: #268342;
+        }
+
+
+        /* VOLUNTEER */
+
+        .volunteer {
+            display: flex;
+            align-items: center;
+            padding: 13px 0;
+            border-bottom: 1px solid #edf0f3;
+        }
+
+
+        .volunteer:last-child {
+            border-bottom: none;
+        }
+
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #e8effc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 21px;
+        }
+
+
+        /* UPDATE */
+
+        .update-item {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 17px;
+        }
+
+
+        .update-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: #edf3ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+
+        /* CONTACT */
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid #edf0f3;
+        }
+
+
+        .call-btn {
+            border: none;
+            background: #e8f7ed;
+            color: #238342;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+
+        .page-back {
+            border: none;
+            background: none;
+            color: #365fa8;
+            font-size: 14px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+
+        .success-message {
+            display: none;
+            margin-top: 15px;
+            background: #e4f7e9;
+            color: #078653;
+            padding: 13px;
+            border-radius: 9px;
+            text-align: center;
+            font-size: 13px;
+        }
+
+
+        @media(max-width: 430px) {
+
+            .phone {
+                max-width: 100%;
+            }
+
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+
+<div class="phone">
+
+
+    <!-- =========================
+         HEADER
+    ========================= -->
+
+    <div class="header">
+
+        <div class="header-left">
+
+            <button class="back-btn"
+                    onclick="goBack()">
+
+                ←
+
+            </button>
+
+            <div class="page-title"
+                 id="headerTitle">
+
+                My Profile
+
+            </div>
+
+        </div>
+
+
+        <!-- THREE LINE MENU -->
+
+        <button class="menu-btn"
+                onclick="openMenu()">
+
+            ☰
+
+        </button>
+
+    </div>
+
+
+
+    <!-- =========================
+         PROFILE PAGE
+    ========================= -->
+
+    <div class="page active"
+         id="profilePage">
+
+
+        <div class="profile-card">
+
+            <div class="profile-image">
+                👤
+            </div>
+
+
+            <div class="user-name"
+                 id="displayName">
+
+                Emergency User
+
+            </div>
+
+
+            <div class="role-badge">
+
+                EMERGENCY USER
+
+            </div>
+
+        </div>
+
+
+
+        <div class="details-card">
+
+
+            <div class="detail-item">
+
+                <div class="detail-icon">✉️</div>
+
+                <div>
+
+                    <div class="detail-label">
+                        EMAIL
+                    </div>
+
+                    <div class="detail-value"
+                         id="displayEmail">
+
+                        user@email.com
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <div class="detail-icon">📞</div>
+
+                <div>
+
+                    <div class="detail-label">
+                        PHONE NUMBER
+                    </div>
+
+                    <div class="detail-value"
+                         id="displayPhone">
+
+                        +91 98765 43210
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <div class="detail-icon">📍</div>
+
+                <div>
+
+                    <div class="detail-label">
+                        ADDRESS
+                    </div>
+
+                    <div class="detail-value"
+                         id="displayAddress">
+
+                        Chennai, Tamil Nadu
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <button class="edit-btn"
+                onclick="showPage('editPage','Edit Profile')">
+
+            Edit Profile
+
+        </button>
+
+
+        <button class="logout-btn"
+                onclick="logout()">
+
+            Logout
+
+        </button>
+
+    </div>
+
+
+
+    <!-- =========================
+         SOS PAGE
+    ========================= -->
+
+    <div class="page"
+         id="sosPage">
+
+        <button class="page-back"
+                onclick="showPage('profilePage','My Profile')">
+
+            ← Back
+
+        </button>
+
+
+        <h2 class="section-title">
+            SOS / Emergency Alert
+        </h2>
+
+
+        <div class="sos-box">
+
+            <h3>Need Immediate Help?</h3>
+
+            <button class="sos-button"
+                    onclick="sendSOS()">
+
+                🚨<br>
+                SOS
+
+            </button>
+
+            <p class="sos-text">
+
+                Press this button to send an emergency alert
+                with your current emergency details.
+
+            </p>
+
+
+            <div class="success-message"
+                 id="sosSuccess">
+
+                🚨 Emergency Alert Sent Successfully!
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =========================
+         REPORT EMERGENCY
+    ========================= -->
+
+    <div class="page"
+         id="reportPage">
+
+        <button class="page-back"
+                onclick="showPage('profilePage','My Profile')">
+
+            ← Back
+
+        </button>
+
+
+        <h2 class="section-title">
+            Report an Emergency
+        </h2>
+
+
+        <div class="card">
+
+            <div class="form-group">
+
+                <label>Emergency Type</label>
+
+                <select id="emergencyType">
+
+                    <option value="">
+                        Select Emergency
+                    </option>
+
+                    <option>🌊 Flood</option>
+                    <option>🔥 Fire</option>
+                    <option>🚑 Medical Emergency</option>
+                    <option>🏚️ Building Collapse</option>
+                    <option>⚠️ Other Emergency</option>
+
+                </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Current / Emergency Location</label>
+
+                <input type="text"
+                       id="location"
+                       placeholder="Enter emergency location">
+
+            </div>
+
+
+            <button class="choice"
+                    style="width:100%; margin-bottom:17px;"
+                    onclick="getLocation()">
+
+                📍 Use Current Location
+
+            </button>
+
+
+            <div class="form-group">
+
+                <label>What happened?</label>
+
+                <textarea id="details"
+                          placeholder="Describe the emergency..."></textarea>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>How serious is the emergency?</label>
+
+                <select id="severity">
+
+                    <option>Low</option>
+                    <option>Medium</option>
+                    <option>High</option>
+                    <option>Critical</option>
+
+                </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Number of People Affected</label>
+
+                <input type="number"
+                       id="people"
+                       placeholder="Enter number">
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Upload Photo / Video</label>
+
+                <input type="file"
+                       id="media"
+                       accept="image/*,video/*">
+
+            </div>
+
+
+            <button class="primary-btn"
+                    onclick="submitEmergency()">
+
+                Send Emergency Report
+
+            </button>
+
+
+            <div class="success-message"
+                 id="reportSuccess">
+
+                Emergency Report Sent Successfully!
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =========================
+         REQUEST HELP
+    ========================= -->
+
+    <div class="page"
+         id="helpPage">
+
+        <button class="page-back"
+                onclick="showPage('profilePage','My Profile')">
+
+            ← Back
+
+        </button>
+
+
+        <h2 class="section-title">
+            Request Help
+        </h2>
+
+
+        <div class="card" id="volunteerList">
+
+            <div class="choice-grid">
+
+                <button class="choice"
+                        onclick="selectHelp(this)">
+
+                    🚑<br>Medical Help
+
+                </button>
+
+                <button class="choice"
+                        onclick="selectHelp(this)">
+
+                    🍲<br>Food
+
+                </button>
+
+                <button class="choice"
+                        onclick="selectHelp(this)">
+
+                    💧<br>Water
+
+                </button>
+
+                <button class="choice"
+                        onclick="selectHelp(this)">
+
+                    🏠<br>Shelter
+
+                </button>
+
+                <button class="choice"
+                        onclick="selectHelp(this)">
+
+                    🚗<br>Rescue
+
+                </button>
+
+                <button class="choice"
+                        onclick="selectHelp(this)">
+
+                    👮<br>Police Help
+
+                </button>
+
+            </div>
+
+
+            <button class="primary-btn"
+                    onclick="requestHelp()">
+
+                Submit Help Request
+
+            </button>
+
+
+            <div class="success-message"
+                 id="helpSuccess">
+
+                Help Request Sent Successfully!
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =========================
+         MY REQUESTS
+    ========================= -->
+
+   <div class="page"
+     id="requestsPage">
+
+    <button class="page-back"
+            onclick="showPage('profilePage','My Profile')">
+
+        ← Back
+
+    </button>
+
+    <h2 class="section-title">
+        My Emergency Requests
+    </h2>
+
+    <div class="card" id="requestsList">
+
+        <p>Loading requests...</p>
+
+    </div>
+
+</div>
+
+    <!-- =========================
+         NEARBY VOLUNTEERS
+    ========================= -->
+
+    <div class="page"
+         id="volunteersPage">
+
+        <button class="page-back"
+                onclick="showPage('profilePage','My Profile')">
+
+            ← Back
+
+        </button>
+
+ 
+        <h2 class="section-title">
+            Nearby Volunteers
+        </h2>
+
+
+        <div class="card" id="volunteersList">
+
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =========================
+         UPDATES
+    ========================= -->
+
+    <div class="page"
+         id="updatesPage">
+
+        <button class="page-back"
+                onclick="showPage('profilePage','My Profile')">
+
+            ← Back
+
+        </button>
+
+
+        <h2 class="section-title">
+            Emergency Updates
+        </h2>
+
+        <div class="card" id="updatesList">
+
+           <p>Loading updates...</p>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =========================
+         EMERGENCY CONTACTS
+    ========================= -->
+
+    <div class="page"
+         id="contactsPage">
+
+        <button class="page-back"
+                onclick="showPage('profilePage','My Profile')">
+
+            ← Back
+
+        </button>
+
+
+        <h2 class="section-title">
+            Emergency Contacts
+        </h2>
+
+
+        <div class="card">
+
+
+            <div class="contact-item">
+
+                <div>
+
+                    <strong>🚑 Ambulance</strong>
+
+                    <br>
+
+                    <small>Emergency Medical Service</small>
+
+                </div>
+
+                <button class="call-btn"
+                        onclick="callNumber('108')">
+
+                    Call 108
+
+                </button>
+
+            </div>
+
+
+
+            <div class="contact-item">
+
+                <div>
+
+                    <strong>👮 Police</strong>
+
+                    <br>
+
+                    <small>Police Emergency</small>
+
+                </div>
+
+                <button class="call-btn"
+                        onclick="callNumber('112')">
+
+                    Call 112
+
+                </button>
+
+            </div>
+
+
+
+            <div class="contact-item">
+
+                <div>
+
+                    <strong>🔥 Fire Service</strong>
+
+                    <br>
+
+                    <small>Fire & Rescue</small>
+
+                </div>
+
+                <button class="call-btn"
+                        onclick="callNumber('101')">
+
+                    Call 101
+
+                </button>
+
+            </div>
+
+
+
+            <div class="contact-item">
+
+                <div>
+
+                    <strong>⚠️ Disaster Control</strong>
+
+                    <br>
+
+                    <small>Disaster Management</small>
+
+                </div>
+
+                <button class="call-btn"
+                        onclick="callNumber('1077')">
+
+                    Call 1077
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =========================
+         EDIT PROFILE PAGE
+    ========================= -->
+
+    <div class="page"
+         id="editPage">
+
+        <button class="page-back"
+                onclick="showPage('profilePage','My Profile')">
+
+            ← Back
+
+        </button>
+
+
+        <h2 class="section-title">
+            Edit Profile
+        </h2>
+
+
+        <div class="card">
+
+
+            <div class="form-group">
+
+                <label>Full Name</label>
+
+                <input type="text"
+                       id="editName"
+                       value="Emergency User">
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Email</label>
+
+                <input type="email"
+                       id="editEmail"
+                       value="user@email.com">
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Phone Number</label>
+
+                <input type="tel"
+                       id="editPhone"
+                       value="+91 98765 43210">
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Address</label>
+
+                <input type="text"
+                       id="editAddress"
+                       value="Chennai, Tamil Nadu">
+
+            </div>
+
+
+            <button class="primary-btn"
+                    onclick="saveProfile()">
+
+                Save Changes
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+
+<!-- =========================
+     SIDE MENU
+========================= -->
+
+<div class="overlay"
+     id="overlay"
+     onclick="closeMenu()">
+
+</div>
+
+
+<div class="side-menu"
+     id="sideMenu">
+
+
+    <div class="menu-header">
+
+        <h2>
+            Emergency Menu
+        </h2>
+
+        <button class="close-btn"
+                onclick="closeMenu()">
+
+            ×
+
+        </button>
+
+    </div>
+
+
+    <button class="menu-item"
+            onclick="openFromMenu('sosPage','SOS / Emergency Alert')">
+
+        🚨 &nbsp; SOS / Emergency Alert
+
+    </button>
+
+
+    <button class="menu-item"
+            onclick="openFromMenu('reportPage','Report an Emergency')">
+
+        📋 &nbsp; Report an Emergency
+
+    </button>
+
+
+    <button class="menu-item"
+            onclick="openFromMenu('helpPage','Request Help')">
+
+        🆘 &nbsp; Request Help
+
+    </button>
+
+
+    <button class="menu-item"
+            onclick="openFromMenu('requestsPage','My Emergency Requests')">
+
+        📑 &nbsp; My Emergency Requests
+
+    </button>
+
+
+    <button class="menu-item"
+            onclick="openFromMenu('volunteersPage','Nearby Volunteers')">
+
+        👥 &nbsp; Nearby Volunteers
+
+    </button>
+
+
+    <button class="menu-item"
+            onclick="openFromMenu('updatesPage','Emergency Updates')">
+
+        🔔 &nbsp; Updates / Notifications
+
+    </button>
+
+
+    <button class="menu-item"
+            onclick="openFromMenu('contactsPage','Emergency Contacts')">
+
+        ☎️ &nbsp; Emergency Contacts
+
+    </button>
+
+
+    <button class="menu-item"
+            onclick="openFromMenu('profilePage','My Profile')">
+
+        👤 &nbsp; My Profile
+
+    </button>
+
+
+    <button class="menu-item"
+            onclick="logout()"
+            style="color:#d94343;">
+
+        🚪 &nbsp; Logout
+
+    </button>
+
+
+</div>
+
+
+
+<script>
+
+
+/* =========================
+   MENU FUNCTIONS
+========================= */
+
+function openMenu() {
+
+    document.getElementById("sideMenu")
+        .classList.add("open");
+
+    document.getElementById("overlay")
+        .classList.add("show");
+
+}
+
+
+function closeMenu() {
+
+    document.getElementById("sideMenu")
+        .classList.remove("open");
+
+    document.getElementById("overlay")
+        .classList.remove("show");
+
+}
+
+
+function openFromMenu(pageId, title) {
+
+    closeMenu();
+
+    showPage(pageId, title);
+
+}
+
+
+
+/* =========================
+   SHOW PAGE
+========================= */
+
+function showPage(pageId, title) {
+
+    const pages =
+        document.querySelectorAll(".page");
+
+
+    pages.forEach(function(page) {
+
+        page.classList.remove("active");
+
+    });
+
+
+    document.getElementById(pageId)
+        .classList.add("active");
+
+
+    document.getElementById("headerTitle")
+        .innerText = title;
+
+        if (pageId === "requestsPage") {
+            loadMyRequests();
+        }
+
+        if (pageId === "volunteersPage") {
+            loadNearbyVolunteers();
+        }
+
+        if (pageId === "updatesPage") {
+            loadNotifications();
+        }
+       
+        if (pageId === "profilePage") {
+            loadProfile();
+        }
+
+    window.scrollTo(0, 0);
+
+}
+
+
+
+/* =========================
+   BACK
+========================= */
+
+function goBack() {
+
+    showPage("profilePage", "My Profile");
+
+}
+
+
+
+/* =========================
+   SOS ALERT
+========================= */
+
+async function sendSOS() {
+
+    const confirmSOS = confirm(
+        "Are you sure you want to send an Emergency SOS Alert?"
+    );
+
+    if (!confirmSOS) {
+        return;
+    }
+
+    try {
+
+        const response = await fetch(
+            "/api/emergencies",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    title: "SOS Emergency Alert",
+                    description: "Emergency SOS alert sent by user",
+                    location: "SOS Alert",
+                    priority: "critical"
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if (response.ok) {
+
+            await fetch(
+                "/api/notifications",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        title: "SOS Alert Sent",
+                        message: "Your emergency SOS alert has been sent successfully.",
+                        type: "sos"
+                    })
+                }
+            );
+
+            document.getElementById("sosSuccess")
+                .style.display = "block";
+
+            alert("🚨 SOS Alert Sent Successfully!");
+
+        } else {
+
+            alert(
+                data.message ||
+                "Failed to send SOS alert."
+            );
+
+        }
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("Server connection failed.");
+
+    }
+}
+
+/* =========================
+   CURRENT LOCATION
+========================= */
+
+function getLocation() {
+
+    const locationInput =
+        document.getElementById("location");
+
+
+    if (navigator.geolocation) {
+
+        locationInput.value =
+            "Getting your current location...";
+
+
+        navigator.geolocation.getCurrentPosition(
+
+            function(position) {
+
+                const latitude =
+                    position.coords.latitude;
+
+                const longitude =
+                    position.coords.longitude;
+
+
+                locationInput.value =
+                    latitude + ", " + longitude;
+
+            },
+
+            function() {
+
+                locationInput.value = "";
+
+                alert(
+                    "Unable to get your location. Please enter it manually."
+                );
+
+            }
+
+        );
+
+    }
+
+    else {
+
+        alert(
+            "Geolocation is not supported by your browser."
+        );
+
+    }
+
+}
+
+
+
+/* =========================
+   SUBMIT EMERGENCY
+========================= */
+async function submitEmergency() {
+
+    const type = document.getElementById("emergencyType").value;
+    const location = document.getElementById("location").value;
+    const details = document.getElementById("details").value;
+    const severity = document.getElementById("severity").value;
+    const people = document.getElementById("people").value;
+
+    if (
+        type === "" ||
+        location === "" ||
+        details === "" ||
+        people === ""
+    ) {
+        alert("Please fill all required emergency details.");
+        return;
+    }
+
+    try {
+
+        const response = await fetch("/api/emergencies", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                title: type,
+                description: details + " | People affected: " + people,
+                location: location,
+                priority: severity.toLowerCase()
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+
+    await fetch(
+        "/api/notifications",
+        {
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                title: "Emergency Report Sent",
+                message: "Your emergency report has been submitted successfully.",
+                type: "emergency"
+            })
+        }
+    );
+
+    document.getElementById("reportSuccess")
+        .style.display = "block";
+
+    alert("Emergency Report Sent Successfully!");
+
+}
+        
+        else {
+
+            alert(data.message || "Failed to send emergency report.");
+
+        }
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("Server connection failed.");
+
+    }
+}
+
+
+/* =========================
+   HELP REQUEST
+========================= */
+
+let selectedHelp = "";
+
+
+function selectHelp(button) {
+
+    const choices =
+        document.querySelectorAll(
+            "#helpPage .choice"
+        );
+
+
+    choices.forEach(function(choice) {
+
+        choice.classList.remove("selected");
+
+    });
+
+
+    button.classList.add("selected");
+
+
+    selectedHelp =
+        button.innerText;
+
+}
+
+/*requesthelp*/
+
+
+
+async function requestHelp() {
+
+    console.log("REQUEST HELP FUNCTION CALLED");
+
+    if (selectedHelp === "") {
+
+        alert("Please select the type of help you need.");
+        return;
+
+    }
+
+    console.log("Sending data to backend...");
+
+    try {
+
+        const response = await fetch(
+            "/api/emergencies",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    title: selectedHelp + " Request",
+                    description: "Emergency user requested " + selectedHelp,
+                    location: "Not provided",
+                    priority: "high"
+                })
+            }
+        );
+
+        const data = await response.json();
+
+if (response.ok) {
+
+    await fetch(
+        "/api/notifications",
+        {
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                title: "Help Request Sent",
+                message: selectedHelp + " request has been submitted successfully.",
+                type: "help"
+            })
+        }
+    );
+
+    document.getElementById("helpSuccess")
+        .style.display = "block";
+
+    alert(selectedHelp + " request sent successfully!");
+
+}
+
+         else {
+
+            alert(
+                data.message ||
+                "Failed to send help request."
+            );
+
+        }
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("Server connection failed.");
+
+    }
+}
+
+async function loadMyRequests() {
+
+    const requestsList =
+        document.getElementById("requestsList");
+
+    try {
+
+        const response =
+            await fetch("/api/emergencies");
+
+        const emergencies =
+            await response.json();
+
+        if (!response.ok) {
+            requestsList.innerHTML =
+                "<p>Failed to load requests.</p>";
+            return;
+        }
+
+        if (emergencies.length === 0) {
+
+            requestsList.innerHTML =
+                "<p>No emergency requests found.</p>";
+
+            return;
+        }
+
+        requestsList.innerHTML = "";
+
+        emergencies.forEach(function(emergency) {
+
+            requestsList.innerHTML += `
+                <div class="request-item">
+
+                    <div class="request-top">
+
+                        <strong>${emergency.title}</strong>
+
+                        <span class="status pending">
+                            🟡 ${emergency.status}
+                        </span>
+
+                    </div>
+
+                    <br>
+
+                    <small>
+                        ${emergency.description}
+                    </small>
+
+                </div>
+            `;
+
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        requestsList.innerHTML =
+            "<p>Server connection failed.</p>";
+
+    }
+}
+
+async function loadNearbyVolunteers() {
+
+    const volunteersList =
+        document.getElementById("volunteersList");
+
+    try {
+
+        const response =
+            await fetch("/api/volunteers");
+
+        const volunteers =
+            await response.json();
+
+        if (!response.ok) {
+            volunteersList.innerHTML =
+                "<p>Failed to load volunteers.</p>";
+            return;
+        }
+
+        if (volunteers.length === 0) {
+            volunteersList.innerHTML =
+                "<p>No volunteers available.</p>";
+            return;
+        }
+
+        volunteersList.innerHTML = "";
+
+        volunteers.forEach(function(volunteer) {
+
+            volunteersList.innerHTML += `
+                <div class="volunteer">
+
+                    <div class="avatar">👤</div>
+
+                    <div>
+                        <strong>${volunteer.name}</strong>
+
+                        <br>
+
+                        <small>
+                            🟢 Available
+                            ${volunteer.location
+                                ? " • " + volunteer.location
+                                : ""}
+                        </small>
+                    </div>
+
+                </div>
+            `;
+
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        volunteersList.innerHTML =
+            "<p>Server connection failed.</p>";
+    }
+}
+
+async function loadNotifications() {
+
+    const updatesList =
+        document.getElementById("updatesList");
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/notifications"
+            );
+
+        const notifications =
+            await response.json();
+
+        if (!response.ok) {
+
+            updatesList.innerHTML =
+                "<p>Failed to load updates.</p>";
+
+            return;
+        }
+
+        if (notifications.length === 0) {
+
+            updatesList.innerHTML =
+                "<p>No new updates.</p>";
+
+            return;
+        }
+
+        updatesList.innerHTML = "";
+
+        notifications.forEach(function(notification) {
+
+            updatesList.innerHTML += `
+                <div class="update-item">
+
+                    <div class="update-icon">
+                        🔔
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            ${notification.title}
+                        </strong>
+
+                        <p>
+                            ${notification.message}
+                        </p>
+
+                        <small>
+                            ${new Date(
+                                notification.createdAt
+                            ).toLocaleString()}
+                        </small>
+
+                    </div>
+
+                </div>
+            `;
+
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        updatesList.innerHTML =
+            "<p>Server connection failed.</p>";
+    }
+}
+
+async function loadProfile() {
+
+    const userId = localStorage.getItem("userId");
+
+    if (!userId) {
+        return;
+    }
+
+    try {
+
+        const response = await fetch(
+            "/api/profile/" + userId
+        );
+
+        const user = await response.json();
+
+        console.log("PROFILE DATA:", user);
+
+        if (!response.ok) {
+            console.log("Profile not found");
+            return;
+        }
+
+        document.getElementById("displayName")
+            .innerText = user.name || "Emergency User";
+
+        document.getElementById("displayEmail")
+            .innerText = user.emailOrPhone || "";
+
+        document.getElementById("displayPhone")
+            .innerText = user.phone || "";
+
+        document.getElementById("displayAddress")
+            .innerText = user.location || "";
+
+        document.getElementById("editName")
+            .value = user.name || "";
+
+        document.getElementById("editEmail")
+            .value = user.emailOrPhone || "";
+
+        document.getElementById("editPhone")
+            .value = user.phone || "";
+
+        document.getElementById("editAddress")
+            .value = user.location || "";
+
+    } catch (error) {
+
+        console.error(error);
+
+    }
+}  
+
+/* =========================
+   CALL EMERGENCY NUMBER
+========================= */
+
+function callNumber(number) {
+
+    window.location.href =
+        "tel:" + number;
+
+}
+
+
+
+/* =========================
+   SAVE PROFILE
+========================= */
+
+async function saveProfile() {
+
+    const userId = localStorage.getItem("userId");
+
+    if (!userId) {
+        alert("User login details not found. Please login again.");
+        return;
+    }
+
+    const name = document.getElementById("editName").value;
+    const phone = document.getElementById("editPhone").value;
+    const address = document.getElementById("editAddress").value;
+
+    if (name === "" || phone === "" || address === "") {
+        alert("Please fill all the fields.");
+        return;
+    }
+
+    try {
+
+        const response = await fetch(
+            "/api/profile/" + userId,
+            {
+                method: "PUT",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    name: name,
+                    phone: phone,
+                    location: address
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            alert(data.message || "Failed to update profile.");
+            return;
+        }
+
+        alert("Profile Updated Successfully!");
+
+        await loadProfile();
+
+        showPage("profilePage", "My Profile");
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("Server connection failed.");
+
+    }
+}
+
+
+
+/* =========================
+   LOGOUT
+========================= */
+
+function logout() {
+
+    const confirmLogout =
+        confirm(
+            "Are you sure you want to logout?"
+        );
+
+
+    if (confirmLogout) {
+
+        localStorage.clear();
+        window.location.assign("login.html");
+
+    }
+
+}
+
+
+</script>
+
+
+</body>
+</html>

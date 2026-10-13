@@ -1,0 +1,28 @@
+{
+  "name": "disaster-response-platform",
+  "version": "1.0.0",
+  "description": "Disaster Response and Volunteer Coordination Platform",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 0"
+  },
+  "keywords": [
+    "disaster-response",
+    "volunteer-coordination",
+    "emergency-management"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "mongoose": "^9.9.4"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

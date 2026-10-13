@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Disaster Response - Admin</title>
+<script src="api-config.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<style>
+/* ========== BASIC ========== */
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif;}
+body{background:#e9efec;display:flex;justify-content:center;min-height:100vh;}
+.app{width:100%;max-width:430px;min-height:100vh;background:#f8faf9;padding-bottom:110px;overflow-x:hidden;}
+button{font-family:inherit;}
+
+/* ========== HEADER ========== */
+.header{height:65px;background:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 17px;border-bottom:1px solid #e4e8e6;position:sticky;top:0;z-index:100;}
+.header h2{font-size:18px;color:#202b27;}
+.header button{border:none;background:none;font-size:21px;cursor:pointer;position:relative;width:40px;height:40px;}
+.bell-count{position:absolute;top:2px;right:0;background:#d00000;color:#fff;font-size:9px;font-weight:bold;min-width:16px;height:16px;border-radius:8px;display:none;align-items:center;justify-content:center;padding:0 4px;}
+.bell-count.show{display:flex;}
+
+/* ========== PAGES ========== */
+.page{display:none;padding:17px 17px 40px;}
+.page.active{display:block;}
+.title{font-size:21px;color:#202b27;margin-bottom:5px;}
+.subtitle{color:#777;font-size:12px;margin-bottom:17px;}
+.section-title{font-size:15px;color:#222;margin-bottom:10px;}
+.empty{text-align:center;color:#888;font-size:12px;padding:30px 10px;background:#fff;border:1px dashed #d5dbd8;border-radius:13px;}
+
+/* ========== WELCOME ========== */
+.admin-card{background:#078653;color:#fff;border-radius:16px;padding:20px;margin-bottom:18px;}
+.admin-card h2{font-size:20px;margin-bottom:7px;}
+.admin-card p{font-size:12px;opacity:.9;}
+
+/* ========== STATS ========== */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:20px;}
+.stat-card{background:#fff;border:1px solid #e0e6e3;border-radius:14px;padding:15px;min-height:110px;cursor:pointer;}
+.stat-icon{font-size:22px;margin-bottom:8px;}
+.stat-card h3{font-size:21px;color:#222;}
+.stat-card p{font-size:11px;color:#777;margin-top:4px;}
+
+/* ========== QUICK ACTIONS ========== */
+.quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:25px;}
+.action{background:#fff;border:1px solid #e0e6e3;border-radius:13px;padding:15px;min-height:105px;cursor:pointer;}
+.action:hover,.action:active{border-color:#078653;}
+.action-icon{font-size:22px;margin-bottom:7px;}
+.action h3{font-size:13px;color:#222;}
+.action p{font-size:10px;color:#777;margin-top:4px;}
+
+/* ========== VOLUNTEERS ========== */
+.search{width:100%;border:1px solid #dce2df;border-radius:9px;padding:11px;outline:none;margin-bottom:13px;font-size:14px;}
+.volunteer{background:#fff;border:1px solid #e1e6e4;border-radius:13px;padding:13px;margin-bottom:10px;display:flex;align-items:center;gap:11px;}
+.avatar{width:47px;height:47px;border-radius:50%;background:#e7f5ed;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.vol-info{flex:1;min-width:0;}
+.vol-info h3{font-size:14px;color:#222;}
+.vol-info p{font-size:11px;color:#777;margin-top:4px;}
+.online{font-size:10px;color:#078653;font-weight:bold;}
+.online.busy{color:#a76500;}
+
+/* ========== DONATIONS ========== */
+.donation{background:#fff;border:1px solid #e1e6e4;border-radius:13px;padding:13px;margin-bottom:10px;display:flex;align-items:center;gap:11px;}
+.donation-icon{width:47px;height:47px;border-radius:50%;background:#fdeef0;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.donation-info{flex:1;min-width:0;}
+.donation-info h3{font-size:14px;color:#222;}
+.donation-info p{font-size:11px;color:#777;margin-top:3px;}
+.donation-amount{font-size:15px;font-weight:bold;color:#078653;white-space:nowrap;}
+
+/* ========== TASKS ========== */
+.task{background:#fff;border:1px solid #e1e6e4;border-radius:14px;padding:14px;margin-bottom:11px;}
+.task-head{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.task-left{display:flex;gap:10px;align-items:center;min-width:0;}
+.task-icon{width:43px;height:43px;border-radius:10px;background:#eaf5ef;display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0;}
+.task h3{font-size:14px;}
+.task p{font-size:11px;color:#777;margin-top:4px;}
+.badge{font-size:9px;padding:5px 8px;border-radius:15px;font-weight:bold;white-space:nowrap;}
+.high{background:#ffe4e4;color:#d00000;}
+.medium{background:#fff0d3;color:#a76500;}
+.low{background:#e8f1ff;color:#2466b1;}
+.critical{background:#ffd0d0;color:#b30000;}
+.completed{background:#e3f5e9;color:#078653;}
+.task-info{border-top:1px solid #eee;margin-top:11px;padding-top:10px;}
+.task-info div{font-size:11px;color:#555;margin-bottom:6px;}
+.task-buttons{display:flex;gap:7px;margin-top:9px;}
+.small-btn{flex:1;padding:10px 6px;border-radius:7px;cursor:pointer;font-size:11px;font-weight:bold;}
+.small-btn:disabled{opacity:.55;cursor:not-allowed;}
+.edit{border:1px solid #078653;background:#fff;color:#078653;}
+.assign{border:none;background:#078653;color:#fff;}
+.done{border:1px solid #2466b1;background:#fff;color:#2466b1;}
+
+/* ========== EMERGENCY ========== */
+.emergency-card{background:#fff;border-left:4px solid #d00000;border-radius:12px;padding:15px;margin-bottom:12px;box-shadow:0 2px 6px rgba(0,0,0,.04);}
+.emergency-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;}
+.emergency-card h3{font-size:15px;}
+.emergency-card p{font-size:12px;color:#666;margin-top:6px;line-height:1.5;}
+.alert-btn{width:100%;margin-top:11px;padding:11px;border:none;border-radius:8px;background:#d00000;color:#fff;cursor:pointer;font-size:12px;font-weight:bold;}
+.alert-btn:disabled{background:#999;cursor:not-allowed;}
+.resolve-btn{width:100%;margin-top:8px;padding:11px;border:1px solid #078653;border-radius:8px;background:#fff;color:#078653;cursor:pointer;font-size:12px;font-weight:bold;}
+.resolve-btn:disabled{opacity:.55;cursor:not-allowed;}
+.create-alert{width:100%;padding:12px;background:#078653;color:#fff;border:none;border-radius:9px;cursor:pointer;font-weight:bold;margin-bottom:15px;font-size:13px;}
+
+/* ========== MAP ========== */
+.map{height:410px;border-radius:15px;background:#dce8df;position:relative;overflow:hidden;}
+.road{position:absolute;background:#fff;}
+.r1{width:600px;height:27px;top:90px;left:-100px;transform:rotate(20deg);}
+.r2{width:600px;height:27px;top:260px;left:-90px;transform:rotate(-25deg);}
+.r3{width:27px;height:500px;left:210px;top:-30px;transform:rotate(12deg);}
+.map-pin{width:36px;height:36px;background:#078653;color:#fff;border:4px solid #fff;border-radius:50%;position:absolute;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.2);cursor:pointer;}
+.p1{top:120px;left:100px;}
+.p2{top:210px;right:65px;}
+.p3{bottom:80px;left:160px;}
+.map-label{position:absolute;background:#fff;padding:7px 9px;border-radius:6px;font-size:10px;box-shadow:0 2px 5px rgba(0,0,0,.1);}
+
+/* ========== REPORTS ========== */
+.report{background:#fff;border:1px solid #e4e8e6;border-radius:13px;padding:15px;margin-bottom:11px;}
+.report-row{display:flex;justify-content:space-between;margin-bottom:11px;}
+.report-row:last-child{margin-bottom:0;}
+.report-row span:first-child{color:#666;font-size:12px;}
+.report-row span:last-child{font-weight:bold;font-size:13px;}
+
+/* ========== NOTIFICATIONS ========== */
+.notification{background:#fff;border:1px solid #e3e8e5;border-radius:13px;padding:14px;margin-bottom:10px;}
+.notification h3{font-size:13px;}
+.notification p{font-size:11px;color:#777;margin-top:5px;}
+.notification small{display:block;font-size:10px;color:#aaa;margin-top:5px;}
+.clear-btn{width:100%;padding:11px;border:1px solid #d5dbd8;background:#fff;border-radius:9px;cursor:pointer;font-size:12px;margin-bottom:12px;}
+
+/* ========== MODAL ========== */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;z-index:10000;}
+.modal.show{display:flex;}
+.modal-box{width:100%;max-width:430px;background:#fff;border-radius:20px 20px 0 0;padding:20px;max-height:90vh;overflow-y:auto;}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;}
+.modal-head h2{font-size:18px;}
+.close{border:none;background:#eee;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:18px;}
+.input{width:100%;padding:11px;border:1px solid #ddd;border-radius:8px;margin-bottom:10px;font-size:14px;outline:none;background:#fff;}
+.input:focus{border-color:#078653;}
+textarea.input{resize:vertical;min-height:70px;}
+.modal-submit{width:100%;padding:12px;border:none;background:#078653;color:#fff;border-radius:8px;cursor:pointer;font-weight:bold;font-size:14px;}
+.pick{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:#fff;border:1px solid #e1e6e4;border-radius:11px;padding:11px;margin-bottom:8px;cursor:pointer;}
+.pick:hover,.pick:active{border-color:#078653;background:#f2faf6;}
+.pick h4{font-size:13px;}
+.pick p{font-size:11px;color:#777;margin-top:2px;}
+.menu-item{display:block;width:100%;text-align:left;background:#fff;border:1px solid #e1e6e4;border-radius:11px;padding:14px;margin-bottom:8px;cursor:pointer;font-size:14px;}
+.menu-item:active{background:#f2faf6;}
+
+/* ========== BOTTOM NAV ========== */
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:73px;background:#fff;border-top:1px solid #d9dedb;display:flex;z-index:9999;box-shadow:0 -2px 8px rgba(0,0,0,.05);}
+.nav{flex:1;height:73px;border:none;background:#fff;color:#777;cursor:pointer;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px;font-size:9px;}
+.nav-icon{font-size:19px;}
+.nav.active{color:#078653;font-weight:bold;}
+
+/* ========== TOAST ========== */
+.toast{position:fixed;bottom:88px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 15px;border-radius:7px;font-size:12px;display:none;z-index:20000;max-width:90%;text-align:center;}
+.toast.show{display:block;}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<!-- HEADER -->
+<header class="header">
+    <button onclick="openMenu()" aria-label="Menu">☰</button>
+    <h2 id="headerTitle">Admin Dashboard</h2>
+    <button onclick="goNotifications()" aria-label="Notifications">🔔<span class="bell-count" id="bellCount">0</span></button>
+</header>
+
+<!-- DASHBOARD -->
+<section class="page active" id="dashboardPage">
+    <div class="admin-card">
+        <h2>Welcome Admin 👋</h2>
+        <p>Manage disaster response and volunteer activities.</p>
+    </div>
+
+    <h2 class="section-title">Overview</h2>
+    <div class="stats">
+        <div class="stat-card" onclick="goVolunteers()">
+            <div class="stat-icon">👥</div>
+            <h3 id="volunteerCount">0</h3>
+            <p>Total Volunteers</p>
+        </div>
+        <div class="stat-card" onclick="goTasks()">
+            <div class="stat-icon">📋</div>
+            <h3 id="taskCount">0</h3>
+            <p>Active Tasks</p>
+        </div>
+        <div class="stat-card" onclick="goEmergencies()">
+            <div class="stat-icon">🚨</div>
+            <h3 id="emergencyCount">0</h3>
+            <p>Emergencies</p>
+        </div>
+        <div class="stat-card" onclick="goTasks()">
+            <div class="stat-icon">✅</div>
+            <h3 id="completedCount">0</h3>
+            <p>Completed Tasks</p>
+        </div>
+        <div class="stat-card" onclick="goDonations()">
+            <div class="stat-icon">💰</div>
+            <h3 id="donationTotal">₹0</h3>
+            <p>Total Donations</p>
+        </div>
+    </div>
+
+    <h2 class="section-title">Quick Actions</h2>
+    <div class="quick-actions">
+        <div class="action" onclick="goTasks()">
+            <div class="action-icon">📋</div>
+            <h3>Manage Tasks</h3>
+            <p>Create and assign tasks</p>
+        </div>
+        <div class="action" onclick="openAlertModal()">
+            <div class="action-icon">🚨</div>
+            <h3>Emergency Alert</h3>
+            <p>Send emergency alert</p>
+        </div>
+        <div class="action" onclick="goVolunteers()">
+            <div class="action-icon">👥</div>
+            <h3>Volunteers</h3>
+            <p>Manage volunteers</p>
+        </div>
+        <div class="action" onclick="goReports()">
+            <div class="action-icon">📊</div>
+            <h3>Reports</h3>
+            <p>View response reports</p>
+        </div>
+    </div>
+</section>
+
+<!-- VOLUNTEERS -->
+<section class="page" id="volunteersPage">
+    <h2 class="title">Volunteers</h2>
+    <p class="subtitle">Manage registered volunteers.</p>
+    <input class="search" id="volunteerSearch" placeholder="Search by name, skill or location..." oninput="searchVolunteers()">
+    <div id="volunteerList"></div>
+</section>
+
+<!-- TASKS -->
+<section class="page" id="tasksPage">
+    <h2 class="title">Task Management</h2>
+    <p class="subtitle">Create, assign and monitor disaster tasks.</p>
+    <button class="create-alert" onclick="openTaskModal()">+ Create New Task</button>
+    <div id="taskList"></div>
+</section>
+
+<!-- EMERGENCIES -->
+<section class="page" id="emergencyPage">
+    <h2 class="title">Emergency Management</h2>
+    <p class="subtitle">Monitor active emergency situations.</p>
+    <button class="create-alert" onclick="openAlertModal()">🚨 Create Emergency Alert</button>
+    <div id="emergencyList"></div>
+</section>
+
+<!-- MAP -->
+<section class="page" id="mapPage">
+    <h2 class="title">Live Map</h2>
+    <p class="subtitle">Monitor tasks, volunteers and emergency locations.</p>
+
+    <div id="liveMap" style="height:410px;border-radius:15px;"></div>
+
+    <p id="liveCoords" style="margin-top:10px;font-size:12px;color:#555;">
+        Fetching current location...
+    </p>
+</section>
+
+<!-- REPORTS -->
+<section class="page" id="reportsPage">
+    <h2 class="title">Reports</h2>
+    <p class="subtitle">Disaster response performance.</p>
+
+    <div class="report">
+        <div class="report-row"><span>Total Volunteers</span><span id="reportVolunteers">0</span></div>
+        <div class="report-row"><span>Available Volunteers</span><span id="reportAvailable">0</span></div>
+        <div class="report-row"><span>Active Tasks</span><span id="reportTasks">0</span></div>
+        <div class="report-row"><span>Emergency Alerts</span><span id="reportEmergencies">0</span></div>
+        <div class="report-row"><span>Completed Tasks</span><span id="reportCompleted">0</span></div>
+        <div class="report-row"><span>Total Donations Raised</span><span id="reportDonations">₹0</span></div>
+    </div>
+
+    <div class="report">
+        <h3 style="font-size:14px;margin-bottom:13px;">Response Status</h3>
+        <div class="report-row"><span>Volunteers Available</span><span id="statusVolunteers" style="color:#078653;">Active</span></div>
+        <div class="report-row"><span>Emergency Response</span><span id="statusEmergency" style="color:#078653;">Running</span></div>
+        <div class="report-row"><span>System Status</span><span id="statusSystem" style="color:#078653;">Online</span></div>
+    </div>
+</section>
+
+<!-- DONATIONS -->
+<section class="page" id="donationsPage">
+    <h2 class="title">Donations</h2>
+    <p class="subtitle">Track all donations received.</p>
+
+    <div class="report" id="donationSummary">
+        <div class="report-row"><span>Total Raised</span><span>₹0</span></div>
+        <div class="report-row"><span>Total Donations</span><span>0</span></div>
+    </div>
+
+    <div id="donationList"></div>
+</section>
+
+<!-- NOTIFICATIONS -->
+<section class="page" id="notificationPage">
+    <h2 class="title">Notifications</h2>
+    <p class="subtitle">Recent system updates.</p>
+    <button class="clear-btn" onclick="clearNotifications()">Clear all</button>
+    <div id="notificationList"></div>
+</section>
+
+<!-- CREATE TASK MODAL -->
+<div class="modal" id="taskModal" onclick="backdropClose(event,'taskModal')">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h2>Create Task</h2>
+            <button class="close" onclick="closeModal('taskModal')">×</button>
+        </div>
+        <input class="input" id="newTaskName" placeholder="Task name *">
+        <input class="input" id="newTaskLocation" placeholder="Location *">
+        <input class="input" id="newTaskTime" placeholder="Date & time (e.g. 10:00 AM - 1:00 PM)">
+        <select class="input" id="newTaskPriority">
+            <option value="High">High priority</option>
+            <option value="Medium" selected>Medium priority</option>
+            <option value="Low">Low priority</option>
+        </select>
+        <input class="input" id="newTaskVolunteers" type="number" min="1" placeholder="Volunteers required">
+        <textarea class="input" id="newTaskDescription" placeholder="Task description"></textarea>
+        <button class="modal-submit" id="createTaskBtn" onclick="createTask()">Create Task</button>
+    </div>
+</div>
+
+<!-- EDIT TASK MODAL -->
+<div class="modal" id="editModal" onclick="backdropClose(event,'editModal')">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h2>Edit Task</h2>
+            <button class="close" onclick="closeModal('editModal')">×</button>
+        </div>
+        <input class="input" id="editTaskName" placeholder="Task name *">
+        <input class="input" id="editTaskLocation" placeholder="Location *">
+        <input class="input" id="editTaskTime" placeholder="Date & time">
+        <select class="input" id="editTaskPriority">
+            <option value="High">High priority</option>
+            <option value="Medium">Medium priority</option>
+            <option value="Low">Low priority</option>
+        </select>
+        <input class="input" id="editTaskVolunteers" type="number" min="1" placeholder="Volunteers required">
+        <textarea class="input" id="editTaskDescription" placeholder="Task description"></textarea>
+        <button class="modal-submit" id="saveTaskBtn" onclick="saveTask()">Save changes</button>
+    </div>
+</div>
+
+<!-- ASSIGN MODAL -->
+<div class="modal" id="assignModal" onclick="backdropClose(event,'assignModal')">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h2>Assign Volunteer</h2>
+            <button class="close" onclick="closeModal('assignModal')">×</button>
+        </div>
+        <div id="assignList"></div>
+    </div>
+</div>
+
+<!-- EMERGENCY ALERT MODAL -->
+<div class="modal" id="alertModal" onclick="backdropClose(event,'alertModal')">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h2>Emergency Alert</h2>
+            <button class="close" onclick="closeModal('alertModal')">×</button>
+        </div>
+        <input class="input" id="alertTitle" placeholder="Emergency type *">
+        <input class="input" id="alertLocation" placeholder="Emergency location *">
+        <select class="input" id="alertSeverity">
+            <option value="High" selected>High severity</option>
+            <option value="Medium">Medium severity</option>
+            <option value="Low">Low severity</option>
+        </select>
+        <textarea class="input" id="alertDescription" placeholder="Emergency description"></textarea>
+        <button class="modal-submit" style="background:#d00000" onclick="createAlert()">Send Emergency Alert</button>
+    </div>
+</div>
+
+<!-- MENU MODAL -->
+<div class="modal" id="menuModal" onclick="backdropClose(event,'menuModal')">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h2>Admin Menu</h2>
+            <button class="close" onclick="closeModal('menuModal')">×</button>
+        </div>
+        <button class="menu-item" onclick="menuGo(goDashboard)">🏠 Dashboard</button>
+        <button class="menu-item" onclick="menuGo(goVolunteers)">👥 Volunteers</button>
+        <button class="menu-item" onclick="menuGo(goTasks)">📋 Tasks</button>
+        <button class="menu-item" onclick="menuGo(goEmergencies)">🚨 Emergencies</button>
+        <button class="menu-item" onclick="menuGo(goDonations)">💰 Donations</button>
+        <button class="menu-item" onclick="menuGo(goMap)">🗺️ Live Map</button>
+        <button class="menu-item" onclick="menuGo(goReports)">📊 Reports</button>
+        <button class="menu-item" onclick="menuGo(goNotifications)">🔔 Notifications</button>
+        <button class="menu-item" onclick="menuGo(refreshAll)">🔄 Refresh data</button>
+    </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+    <button class="nav active" id="navDashboard" onclick="goDashboard()"><span class="nav-icon">🏠</span>Dashboard</button>
+    <button class="nav" id="navVolunteers" onclick="goVolunteers()"><span class="nav-icon">👥</span>Volunteers</button>
+    <button class="nav" id="navTasks" onclick="goTasks()"><span class="nav-icon">📋</span>Tasks</button>
+    <button class="nav" id="navEmergency" onclick="goEmergencies()"><span class="nav-icon">🚨</span>Alerts</button>
+    <button class="nav" id="navMap" onclick="goMap()"><span class="nav-icon">🗺️</span>Map</button>
+    <button class="nav" id="navReports" onclick="goReports()"><span class="nav-icon">📊</span>Reports</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+</div>
+
+<script>
+/* =========================
+   DATA (sample data is used only if the server is not reachable)
+========================= */
+let volunteers = [
+    { name:"Arun Kumar", location:"Chennai", skills:"First Aid", status:"Available" },
+    { name:"Priya S",    location:"Chennai", skills:"Food Distribution", status:"Available" },
+    { name:"Rahul M",    location:"Chennai", skills:"Rescue", status:"On Task" },
+    { name:"Meena K",    location:"Chennai", skills:"Medical Support", status:"Available" }
+];
+
+let tasks = [
+    { name:"Rescue People", icon:"🚑", location:"Chennai Relief Area", time:"10:00 AM - 1:00 PM", priority:"High", volunteers:5, status:"available", description:"" },
+    { name:"Food Distribution", icon:"🥫", location:"Flood Relief Camp", time:"11:00 AM - 2:00 PM", priority:"High", volunteers:6, status:"available", description:"" },
+    { name:"Medical Assistance", icon:"🏥", location:"Government Medical Centre", time:"12:00 PM - 4:00 PM", priority:"Medium", volunteers:3, status:"available", description:"" }
+];
+
+let emergencies = [
+    { title:"Flood Emergency", location:"Chennai", severity:"High", notified:false, status:"pending", requestedBy:null,
+      description:"Heavy flooding reported. Volunteers are required for rescue and relief activities." }
+];
+
+let donations = [];
+
+let notifications = [
+    { title:"🔔 New Volunteer Registered", text:"A new volunteer has joined the platform.", time:new Date() },
+    { title:"📋 Task Accepted", text:"A volunteer has accepted a disaster response task.", time:new Date() },
+    { title:"🚨 Emergency Alert Active", text:"Volunteers in the affected area have been notified.", time:new Date() }
+];
+
+let unread = 0;
+let currentEditIndex = null;
+let currentAssignIndex = null;
+
+/* =========================
+   HELPERS
+========================= */
+function $(id){ return document.getElementById(id); }
+
+function esc(value){
+    return String(value === undefined || value === null ? "" : value)
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#39;");
+}
+
+function cap(text){
+    text = String(text || "");
+    return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+function isCompleted(task){
+    return String(task.status || "").toLowerCase() === "completed";
+}
+
+function priorityClass(p){
+    p = String(p || "medium").toLowerCase();
+    return ["high","medium","low","critical"].includes(p) ? p : "medium";
+}
+
+function taskIcon(title){
+    const t = String(title || "").toLowerCase();
+    if(/rescue|boat|evac/.test(t)) return "🚑";
+    if(/food|meal|water|distribut/.test(t)) return "🥫";
+    if(/medic|health|doctor|first aid/.test(t)) return "🏥";
+    if(/shelter|camp/.test(t)) return "⛺";
+    if(/clean|clear/.test(t)) return "🧹";
+    return "📋";
+}
+
+function money(n){
+    return "₹" + (Number(n) || 0).toLocaleString("en-IN");
+}
+
+/* Safe API call - never throws */
+async function api(url, options){
+    try{
+        const response = await fetch(url, options);
+        let data = null;
+        try{ data = await response.json(); }catch(e){ data = null; }
+        return { ok: response.ok, data: data, status: response.status };
+    }catch(error){
+        return { ok:false, data:null, status:0, error:error };
+    }
+}
+
+function jsonOptions(method, body){
+    return {
+        method: method,
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify(body)
+    };
+}
+
+function addNotification(title, text){
+    notifications.unshift({ title:title, text:text, time:new Date() });
+    unread++;
+    updateBell();
+    if($("notificationPage").classList.contains("active")) renderNotifications();
+}
+
+function updateBell(){
+    const bell = $("bellCount");
+    bell.innerText = unread > 99 ? "99+" : unread;
+    bell.classList.toggle("show", unread > 0);
+}
+
+/* =========================
+   NAVIGATION
+========================= */
+function hidePages(){
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+}
+
+function setNav(id){
+    document.querySelectorAll(".nav").forEach(n => n.classList.remove("active"));
+    if(id) $(id).classList.add("active");
+}
+
+function showPage(pageId, title, navId){
+    hidePages();
+    $(pageId).classList.add("active");
+    $("headerTitle").innerText = title;
+    setNav(navId);
+    window.scrollTo(0,0);
+}
+
+function goDashboard(){
+    showPage("dashboardPage","Admin Dashboard","navDashboard");
+    updateDashboard();
+}
+
+function goVolunteers(){
+    showPage("volunteersPage","Volunteers","navVolunteers");
+    renderVolunteers();
+    loadVolunteers();
+}
+
+function goTasks(){
+    showPage("tasksPage","Task Management","navTasks");
+    renderTasks();
+    loadTasks();
+}
+
+function goEmergencies(){
+    showPage("emergencyPage","Emergencies","navEmergency");
+    renderEmergencies();
+    loadEmergencies();
+}
+
+function goDonations(){
+    showPage("donationsPage","Donations",null);
+    renderDonations();
+    loadDonations();
+}
+let mapInstance = null;
+let mapMarker = null;
+
+function goMap(){
+    showPage("mapPage","Live Map","navMap");
+    loadLiveMap();
+}
+
+function loadLiveMap(){
+
+    if (!navigator.geolocation) {
+        $("liveCoords").innerText = "Geolocation not supported by your browser.";
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+
+        function(position){
+
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+
+            $("liveCoords").innerText =
+                "📍 Current Location: " + lat.toFixed(5) + ", " + lng.toFixed(5);
+
+            if (!mapInstance) {
+
+                mapInstance = L.map('liveMap').setView([lat, lng], 15);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(mapInstance);
+
+                mapMarker = L.marker([lat, lng]).addTo(mapInstance)
+                    .bindPopup("Current location")
+                    .openPopup();
+
+            } else {
+
+                mapInstance.setView([lat, lng], 15);
+                mapMarker.setLatLng([lat, lng]);
+
+            }
+
+        },
+
+        function(){
+            $("liveCoords").innerText =
+                "Unable to fetch location. Please allow location access.";
+        }
+
+    );
+
+}
+
+
+function goReports(){
+    showPage("reportsPage","Reports","navReports");
+    updateReports();
+}
+
+function goNotifications(){
+    showPage("notificationPage","Notifications",null);
+    unread = 0;
+    updateBell();
+    renderNotifications();
+}
+
+/* =========================
+   MENU / MODALS
+========================= */
+function openMenu(){ $("menuModal").classList.add("show"); }
+
+function menuGo(fn){
+    closeModal("menuModal");
+    fn();
+}
+
+function closeModal(id){ $(id).classList.remove("show"); }
+
+function backdropClose(event, id){
+    if(event.target === $(id)) closeModal(id);
+}
+
+/* =========================
+   TOAST
+========================= */
+let toastTimer = null;
+function showToast(message){
+    const toast = $("toast");
+    toast.innerText = message;
+    toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove("show"), 2400);
+}
+
+/* =========================
+   VOLUNTEERS
+========================= */
+async function loadVolunteers(){
+    const res = await api("/api/admin/volunteers");
+    if(!res.ok || !Array.isArray(res.data)){
+        return false;
+    }
+
+    volunteers = res.data.map(user => ({
+        _id: user._id,
+        name: user.name || "Unnamed Volunteer",
+        location: user.location || "Not specified",
+        skills: user.skills || "Volunteer",
+        status: user.status || "Available"
+    }));
+
+    renderVolunteers();
+    updateDashboard();
+    updateReports();
+    return true;
+}
+
+function renderVolunteers(list){
+    list = list || volunteers;
+    const container = $("volunteerList");
+
+    if(list.length === 0){
+        container.innerHTML = '<div class="empty">No volunteers found.</div>';
+        return;
+    }
+
+    container.innerHTML = list.map(v => {
+        const busy = String(v.status).toLowerCase() !== "available";
+        return `
+        <div class="volunteer">
+            <div class="avatar">👤</div>
+            <div class="vol-info">
+                <h3>${esc(v.name)}</h3>
+                <p>📍 ${esc(v.location)}</p>
+                <p>🛠 ${esc(v.skills)}</p>
+            </div>
+            <div class="online ${busy ? "busy" : ""}">${esc(v.status)}</div>
+        </div>`;
+    }).join("");
+}
+
+function searchVolunteers(){
+    const value = $("volunteerSearch").value.toLowerCase().trim();
+    const filtered = volunteers.filter(v =>
+        String(v.name).toLowerCase().includes(value) ||
+        String(v.skills).toLowerCase().includes(value) ||
+        String(v.location).toLowerCase().includes(value)
+    );
+    renderVolunteers(filtered);
+}
+
+/* =========================
+   TASKS
+========================= */
+async function loadTasks(){
+    const res = await api("/api/tasks");
+    if(!res.ok || !Array.isArray(res.data)){
+        return false;
+    }
+
+    tasks = res.data.map(task => ({
+        _id: task._id,
+        assignedVolunteer: task.assignedVolunteer,
+        name: task.title || "Untitled Task",
+        icon: taskIcon(task.title),
+        location: task.location || "Not specified",
+        time: task.time || "Not specified",
+        priority: cap(task.priority || "Medium"),
+        volunteers: task.volunteersRequired || 1,
+        status: task.status || "available",
+        description: task.description || ""
+    }));
+
+    renderTasks();
+    updateDashboard();
+    updateReports();
+    return true;
+}
+
+function volunteerNameById(value){
+    if(!value) return "";
+    const id = typeof value === "object" ? value._id : value;
+    if(typeof value === "object" && value.name) return value.name;
+    const found = volunteers.find(v => v._id === id);
+    return found ? found.name : "";
+}
+
+function renderTasks(){
+    const container = $("taskList");
+
+    if(tasks.length === 0){
+        container.innerHTML = '<div class="empty">No tasks yet. Tap "Create New Task" to add one.</div>';
+        return;
+    }
+
+    container.innerHTML = tasks.map((task, index) => {
+        const done = isCompleted(task);
+        const assigned = !!task.assignedVolunteer;
+        const assignedName = volunteerNameById(task.assignedVolunteer);
+
+        return `
+        <div class="task">
+            <div class="task-head">
+                <div class="task-left">
+                    <div class="task-icon">${esc(task.icon)}</div>
+                    <div>
+                        <h3>${esc(task.name)}</h3>
+                        <p>${esc(task.location)}</p>
+                    </div>
+                </div>
+                <span class="badge ${done ? "completed" : priorityClass(task.priority)}">
+                    ${done ? "Completed" : esc(cap(task.priority))}
+                </span>
+            </div>
+
+            <div class="task-info">
+                <div>📍 ${esc(task.location)}</div>
+                <div>⏰ ${esc(task.time)}</div>
+                <div>👥 ${esc(task.volunteers)} volunteers required</div>
+                <div>📌 Status: ${esc(cap(task.status))}</div>
+                ${assigned ? `<div>🙋 Assigned to: ${esc(assignedName || "Volunteer")}</div>` : ""}
+                ${task.description ? `<div>📝 ${esc(task.description)}</div>` : ""}
+            </div>
+
+            <div class="task-buttons">
+                <button class="small-btn edit" onclick="editTask(${index})" ${done ? "disabled" : ""}>Edit</button>
+                <button class="small-btn assign" onclick="openAssignModal(${index})" ${(assigned || done) ? "disabled" : ""}>
+                    ${assigned ? "Assigned" : "Assign Volunteer"}
+                </button>
+                <button class="small-btn done" onclick="completeTask(${index})" ${done ? "disabled" : ""}>
+                    ${done ? "Done" : "Complete"}
+                </button>
+            </div>
+        </div>`;
+    }).join("");
+}
+
+/* ---------- CREATE TASK ---------- */
+function openTaskModal(){
+    $("newTaskName").value = "";
+    $("newTaskLocation").value = "";
+    $("newTaskTime").value = "";
+    $("newTaskPriority").value = "Medium";
+    $("newTaskVolunteers").value = "";
+    $("newTaskDescription").value = "";
+    $("taskModal").classList.add("show");
+}
+
+async function createTask(){
+    const name = $("newTaskName").value.trim();
+    const location = $("newTaskLocation").value.trim();
+    const time = $("newTaskTime").value.trim();
+    const priority = $("newTaskPriority").value || "Medium";
+    const required = parseInt($("newTaskVolunteers").value, 10) || 1;
+    const description = $("newTaskDescription").value.trim();
+
+    if(!name || !location){
+        showToast("Please enter task name and location");
+        return;
+    }
+
+    const btn = $("createTaskBtn");
+    btn.disabled = true;
+
+    const res = await api("/api/tasks", jsonOptions("POST", {
+        title: name,
+        description: description,
+        location: location,
+        time: time,
+        priority: priority,
+        volunteersRequired: required
+    }));
+
+    btn.disabled = false;
+
+    if(!res.ok){
+        if(res.status === 0){
+            tasks.unshift({
+                name:name, icon:taskIcon(name), location:location,
+                time:time || "Not specified", priority:priority,
+                volunteers:required, status:"available", description:description
+            });
+            closeModal("taskModal");
+            renderTasks();
+            updateDashboard();
+            updateReports();
+            showToast("Server offline - task saved on this page only");
+            return;
+        }
+        showToast((res.data && res.data.message) || "Failed to create task");
+        return;
+    }
+
+    closeModal("taskModal");
+    addNotification("📋 Task Created", name + " at " + location);
+    await loadTasks();
+    renderTasks();
+    updateDashboard();
+    updateReports();
+    showToast("✓ New task created");
+}
+
+/* ---------- EDIT TASK ---------- */
+function editTask(index){
+    const task = tasks[index];
+    if(!task) return;
+
+    currentEditIndex = index;
+    $("editTaskName").value = task.name;
+    $("editTaskLocation").value = task.location === "Not specified" ? "" : task.location;
+    $("editTaskTime").value = task.time === "Not specified" ? "" : task.time;
+    $("editTaskPriority").value = cap(String(task.priority).toLowerCase());
+    $("editTaskVolunteers").value = task.volunteers;
+    $("editTaskDescription").value = task.description || "";
+    $("editModal").classList.add("show");
+}
+
+async function saveTask(){
+    const index = currentEditIndex;
+    const task = tasks[index];
+    if(!task) return;
+
+    const name = $("editTaskName").value.trim();
+    const location = $("editTaskLocation").value.trim();
+
+    if(!name || !location){
+        showToast("Please enter task name and location");
+        return;
+    }
+
+    const updated = {
+        title: name,
+        location: location,
+        time: $("editTaskTime").value.trim(),
+        priority: $("editTaskPriority").value || "Medium",
+        volunteersRequired: parseInt($("editTaskVolunteers").value, 10) || 1,
+        description: $("editTaskDescription").value.trim()
+    };
+
+    const btn = $("saveTaskBtn");
+    btn.disabled = true;
+
+    let saved = false;
+
+    if(task._id){
+        const res = await api("/api/tasks/" + task._id, jsonOptions("PUT", updated));
+        if(!res.ok && res.status !== 0){
+            btn.disabled = false;
+            showToast((res.data && res.data.message) || "Failed to update task");
+            return;
+        }
+        saved = res.ok;
+    }
+
+    btn.disabled = false;
+
+    tasks[index] = {
+        ...task,
+        name: updated.title,
+        icon: taskIcon(updated.title),
+        location: updated.location,
+        time: updated.time || "Not specified",
+        priority: updated.priority,
+        volunteers: updated.volunteersRequired,
+        description: updated.description
+    };
+
+    closeModal("editModal");
+    renderTasks();
+    showToast(saved || !task._id ? "✓ Task updated" : "Server offline - updated on this page only");
+}
+
+/* ---------- ASSIGN VOLUNTEER ---------- */
+async function openAssignModal(index){
+    currentAssignIndex = index;
+
+    if(volunteers.length === 0 || !volunteers.some(v => v._id)){
+        await loadVolunteers();
+    }
+
+    const available = volunteers.filter(v => String(v.status).toLowerCase() === "available");
+    const list = $("assignList");
+
+    if(available.length === 0){
+        list.innerHTML = '<div class="empty">No available volunteers right now.</div>';
+    }else{
+        list.innerHTML = available.map(v => {
+            const realIndex = volunteers.indexOf(v);
+            return `
+            <button class="pick" onclick="assignTask(${realIndex})">
+                <div class="avatar" style="width:38px;height:38px;font-size:18px;">👤</div>
+                <div>
+                    <h4>${esc(v.name)}</h4>
+                    <p>🛠 ${esc(v.skills)} · 📍 ${esc(v.location)}</p>
+                </div>
+            </button>`;
+        }).join("");
+    }
+
+    $("assignModal").classList.add("show");
+}
+
+async function assignTask(volIndex){
+    const index = currentAssignIndex;
+    const task = tasks[index];
+    const volunteer = volunteers[volIndex];
+    if(!task || !volunteer) return;
+
+    if(task._id){
+        if(!volunteer._id){
+            showToast("This volunteer cannot be assigned (no ID)");
+            return;
+        }
+
+        const res = await api("/api/tasks/" + task._id + "/assign",
+            jsonOptions("PUT", { volunteerId: volunteer._id }));
+
+        if(!res.ok){
+            showToast((res.data && res.data.message) || "Failed to assign task");
+            return;
+        }
+    }
+
+    volunteer.status = "On Task";
+    task.status = "accepted";
+    task.assignedVolunteer = volunteer._id || volunteer.name;
+
+    closeModal("assignModal");
+    addNotification("📋 Task Assigned", volunteer.name + " assigned to " + task.name);
+
+    if(task._id) await loadTasks();
+    renderTasks();
+    renderVolunteers();
+    updateDashboard();
+    updateReports();
+    showToast("✓ Task assigned to " + volunteer.name);
+}
+
+/* ---------- COMPLETE TASK ---------- */
+async function completeTask(index){
+    const task = tasks[index];
+    if(!task || isCompleted(task)) return;
+
+    if(!confirm('Mark "' + task.name + '" as completed?')) return;
+
+    if(task._id){
+        const res = await api("/api/tasks/" + task._id, jsonOptions("PUT", { status:"completed" }));
+        if(!res.ok && res.status !== 0){
+            showToast((res.data && res.data.message) || "Failed to complete task");
+            return;
+        }
+    }
+
+    task.status = "completed";
+
+    if(task.assignedVolunteer){
+        const id = typeof task.assignedVolunteer === "object" ? task.assignedVolunteer._id : task.assignedVolunteer;
+        const vol = volunteers.find(v => v._id === id || v.name === id);
+        if(vol) vol.status = "Available";
+    }
+
+    addNotification("✅ Task Completed", task.name + " has been completed.");
+    renderTasks();
+    updateDashboard();
+    updateReports();
+    showToast("✓ Task completed");
+}
+
+/* =========================
+   EMERGENCIES
+========================= */
+async function loadEmergencies(){
+    const res = await api("/api/admin/emergencies");
+    if(!res.ok || !Array.isArray(res.data)){
+        return false;
+    }
+
+    emergencies = res.data.map(e => ({
+        _id: e._id,
+        title: e.title,
+        location: e.location,
+        severity: cap(e.priority || "high"),
+        description: e.description || "",
+        status: e.status || "pending",
+        requestedBy: e.requestedBy,
+        notified: false
+    }));
+
+    renderEmergencies();
+    updateDashboard();
+    updateReports();
+    return true;
+}
+
+function renderEmergencies(){
+    const container = $("emergencyList");
+
+    if(emergencies.length === 0){
+        container.innerHTML = '<div class="empty">No active emergencies.</div>';
+        return;
+    }
+
+    container.innerHTML = emergencies.map((e, index) => {
+        const reporter = (e.requestedBy && e.requestedBy.name)
+            ? e.requestedBy.name
+            : (e.requestedBy ? "Registered user" : "Admin");
+        const resolved = String(e.status).toLowerCase() === "resolved";
+
+        return `
+        <div class="emergency-card">
+            <div class="emergency-top">
+                <h3>🚨 ${esc(e.title)}</h3>
+                <span class="badge ${priorityClass(e.severity)}">${esc(cap(e.severity))}</span>
+            </div>
+            <p>📍 ${esc(e.location)}</p>
+            <p>${esc(e.description)}</p>
+            <p style="margin-top:6px;font-size:11px;color:#999;">
+                🙋 Reported by: ${esc(reporter)} · 📌 Status: ${esc(cap(e.status || "pending"))}
+            </p>
+            <button class="alert-btn" onclick="notifyVolunteers(${index})" ${e.notified ? "disabled" : ""}>
+                ${e.notified ? "✓ Volunteers Notified" : "Notify Nearby Volunteers"}
+            </button>
+            <button class="resolve-btn" onclick="resolveEmergency(${index})" ${resolved ? "disabled" : ""}>
+                ${resolved ? "✓ Resolved" : "Mark as Resolved"}
+            </button>
+        </div>`;
+    }).join("");
+}
+
+function openAlertModal(){
+    $("alertTitle").value = "";
+    $("alertLocation").value = "";
+    $("alertSeverity").value = "High";
+    $("alertDescription").value = "";
+    $("alertModal").classList.add("show");
+}
+
+async function createAlert(){
+    const title = $("alertTitle").value.trim();
+    const location = $("alertLocation").value.trim();
+    const severity = $("alertSeverity").value || "High";
+    const description = $("alertDescription").value.trim();
+
+    if(!title || !location){
+        showToast("Enter emergency type and location");
+        return;
+    }
+
+    const emergency = {
+        title: title,
+        location: location,
+        severity: severity,
+        description: description || "Emergency situation reported.",
+        status: "pending",
+        requestedBy: null,
+        notified: false
+    };
+
+    const res = await api("/api/emergencies", jsonOptions("POST", {
+        title: title, location: location, priority: severity, description: emergency.description
+    }));
+
+    if(res.ok && res.data && res.data.emergency && res.data.emergency._id){
+        emergency._id = res.data.emergency._id;
+    }
+
+    emergencies.unshift(emergency);
+
+    closeModal("alertModal");
+    addNotification("🚨 Emergency Alert Created", title + " at " + location);
+    updateDashboard();
+    updateReports();
+    if($("emergencyPage").classList.contains("active")) renderEmergencies();
+    showToast("🚨 Emergency alert created");
+}
+
+function notifyVolunteers(index){
+    const e = emergencies[index];
+    if(!e) return;
+    e.notified = true;
+    addNotification("🚨 Volunteers Notified", "Volunteers near " + e.location + " were alerted about: " + e.title);
+    renderEmergencies();
+    showToast("✓ Nearby volunteers notified");
+}
+
+async function resolveEmergency(index){
+    const e = emergencies[index];
+    if(!e) return;
+    if(!confirm('Mark "' + e.title + '" as resolved?')) return;
+
+    if(e._id){
+        const res = await api("/api/emergencies/" + e._id + "/status", jsonOptions("PUT", { status:"resolved" }));
+        if(!res.ok && res.status !== 0){
+            showToast((res.data && res.data.message) || "Failed to resolve emergency");
+            return;
+        }
+    }
+
+    e.status = "resolved";
+    addNotification("✅ Emergency Resolved", e.title + " has been resolved.");
+    renderEmergencies();
+    updateDashboard();
+    updateReports();
+    showToast("✓ Emergency resolved");
+}
+
+/* =========================
+   DONATIONS
+========================= */
+function totalDonationAmount(){
+    return donations.reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
+}
+
+async function loadDonations(){
+    const res = await api("/api/donations");
+    if(!res.ok || !Array.isArray(res.data)){
+        return false;
+    }
+
+    donations = res.data.map(d => ({
+        _id: d._id,
+        donorName: (d.donorId && d.donorId.name) ? d.donorId.name : "Anonymous Donor",
+        donorContact: (d.donorId && d.donorId.emailOrPhone) ? d.donorId.emailOrPhone : "",
+        amount: d.amount || 0,
+        paymentMethod: d.paymentMethod || "Not specified",
+        date: d.createdAt ? new Date(d.createdAt) : new Date()
+    }));
+
+    renderDonations();
+    updateDashboard();
+    updateReports();
+    return true;
+}
+
+function renderDonations(){
+    const container = $("donationList");
+    const summary = $("donationSummary");
+
+    if(summary){
+        summary.innerHTML = `
+            <div class="report-row"><span>Total Raised</span><span>${money(totalDonationAmount())}</span></div>
+            <div class="report-row"><span>Total Donations</span><span>${donations.length}</span></div>
+        `;
+    }
+
+    if(donations.length === 0){
+        container.innerHTML = '<div class="empty">No donations received yet.</div>';
+        return;
+    }
+
+    container.innerHTML = donations.map(d => `
+        <div class="donation">
+            <div class="donation-icon">❤️</div>
+            <div class="donation-info">
+                <h3>${esc(d.donorName)}</h3>
+                <p>${esc(d.paymentMethod)} · ${esc(d.date.toLocaleString())}</p>
+            </div>
+            <div class="donation-amount">${money(d.amount)}</div>
+        </div>
+    `).join("");
+}
+
+/* =========================
+   NOTIFICATIONS PAGE
+========================= */
+function renderNotifications(){
+    const container = $("notificationList");
+
+    if(notifications.length === 0){
+        container.innerHTML = '<div class="empty">No notifications.</div>';
+        return;
+    }
+
+    container.innerHTML = notifications.map(n => `
+        <div class="notification">
+            <h3>${esc(n.title)}</h3>
+            <p>${esc(n.text)}</p>
+            <small>${esc(n.time.toLocaleString())}</small>
+        </div>
+    `).join("");
+}
+
+function clearNotifications(){
+    notifications = [];
+    renderNotifications();
+    showToast("Notifications cleared");
+}
+
+/* =========================
+   DASHBOARD + REPORTS
+========================= */
+function countActive(){ return tasks.filter(t => !isCompleted(t)).length; }
+function countCompleted(){ return tasks.filter(t => isCompleted(t)).length; }
+function countAvailable(){ return volunteers.filter(v => String(v.status).toLowerCase() === "available").length; }
+
+function updateDashboard(){
+    $("volunteerCount").innerText = volunteers.length;
+    $("taskCount").innerText = countActive();
+    $("emergencyCount").innerText = emergencies.length;
+    $("completedCount").innerText = countCompleted();
+    $("donationTotal").innerText = money(totalDonationAmount());
+}
+
+function updateReports(){
+    $("reportVolunteers").innerText = volunteers.length;
+    $("reportAvailable").innerText = countAvailable();
+    $("reportTasks").innerText = countActive();
+    $("reportEmergencies").innerText = emergencies.length;
+    $("reportCompleted").innerText = countCompleted();
+    $("reportDonations").innerText = money(totalDonationAmount());
+
+    const statusVol = $("statusVolunteers");
+    statusVol.innerText = countAvailable() > 0 ? "Active" : "None available";
+    statusVol.style.color = countAvailable() > 0 ? "#078653" : "#d00000";
+
+    const statusEm = $("statusEmergency");
+    statusEm.innerText = emergencies.length > 0 ? "Running" : "Idle";
+    statusEm.style.color = emergencies.length > 0 ? "#d00000" : "#078653";
+}
+
+/* =========================
+   REFRESH + INITIAL LOAD
+========================= */
+async function refreshAll(){
+    const [v, t, e, d] = await Promise.all([
+        loadVolunteers(),
+        loadTasks(),
+        loadEmergencies(),
+        loadDonations()
+    ]);
+
+    updateDashboard();
+    updateReports();
+    renderVolunteers();
+    renderTasks();
+    renderEmergencies();
+    renderDonations();
+
+    const system = $("statusSystem");
+    if(v || t || e || d){
+        system.innerText = "Online";
+        system.style.color = "#078653";
+        showToast("✓ Data refreshed");
+    }else{
+        system.innerText = "Offline";
+        system.style.color = "#d00000";
+        showToast("Server not reachable - showing sample data");
+    }
+}
+
+updateDashboard();
+updateReports();
+renderVolunteers();
+renderTasks();
+renderEmergencies();
+renderDonations();
+renderNotifications();
+refreshAll();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,26 @@
+# Netlify Configuration for Disaster Response Platform
+
+[build]
+  publish = "."
+
+# Homepage routing: Ensure root URL opens first.html
+[[redirects]]
+  from = "/"
+  to = "/first.html"
+  status = 200
+
+# Netlify API Proxy to Render Backend
+# To use this proxy, replace YOUR_BACKEND_URL with your Render service name
+# Example: to = "https://disaster-response-backend.onrender.com/api/:splat"
+[[redirects]]
+  from = "/api/*"
+  to = "https://YOUR_BACKEND_URL.onrender.com/api/:splat"
+  status = 200
+  force = true
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
